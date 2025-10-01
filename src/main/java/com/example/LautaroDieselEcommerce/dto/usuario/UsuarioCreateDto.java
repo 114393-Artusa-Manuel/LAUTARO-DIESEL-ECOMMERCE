@@ -26,7 +26,5 @@ public class UsuarioCreateDto {
 
     private String telefono;
 
-    private String segmento;
-
     private Set<Long> rolesIds;
 }

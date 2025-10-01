@@ -18,7 +18,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Autorización: por defecto permite todo (para no bloquear endpoints al principio)
+                // Autorización: por defecto permite  (para no bloquear endpoints al principio)
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
                 )

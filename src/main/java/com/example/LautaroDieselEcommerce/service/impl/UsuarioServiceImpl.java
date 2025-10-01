@@ -9,13 +9,12 @@ import com.example.LautaroDieselEcommerce.entity.usuario.UsuarioEntity;
 import com.example.LautaroDieselEcommerce.repository.usuario.RolRepository;
 import com.example.LautaroDieselEcommerce.repository.usuario.UsuarioRepository;
 import com.example.LautaroDieselEcommerce.service.UsuarioService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,7 +45,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .claveHash(passwordEncoder.encode(dto.getClave()))
                 .nombreCompleto(dto.getNombreCompleto())
                 .telefono(dto.getTelefono())
-                .segmento(dto.getSegmento())
                 .activo(true)
                 .fechaCreacion(LocalDateTime.now())
                 .fechaActualizacion(LocalDateTime.now())
@@ -114,9 +112,14 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .telefono(usuario.getTelefono())
                 .segmento(usuario.getSegmento())
                 .activo(usuario.getActivo())
-                .roles(usuario.getRoles().stream().map(RolEntity::getNombre).collect(Collectors.toSet()))
+                .roles(usuario.getRoles() != null
+                        ? usuario.getRoles().stream()
+                        .map(RolEntity::getNombre)
+                        .collect(Collectors.toSet())
+                        : new HashSet<>()) // si es null, devuelvo set vacío
                 .build();
     }
+
 }
 
 

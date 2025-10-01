@@ -12,6 +12,7 @@ import com.example.LautaroDieselEcommerce.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,7 +30,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     private RolRepository rolRepository;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private PasswordEncoder passwordEncoder;
+
 
     @Override
     public BaseResponse<UsuarioDto> crearUsuario(UsuarioCreateDto dto) {

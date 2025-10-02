@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -29,5 +30,5 @@ public class UsuarioUpdateDto {
 
     private String segmento;
 
-    private Set<Long> rolesIds;
+    private List<Long> rolesIds;
 }

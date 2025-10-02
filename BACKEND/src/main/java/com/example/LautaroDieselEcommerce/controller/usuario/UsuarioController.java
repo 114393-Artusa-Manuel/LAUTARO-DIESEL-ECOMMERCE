@@ -6,6 +6,7 @@ import com.example.LautaroDieselEcommerce.dto.usuario.UsuarioDto;
 import com.example.LautaroDieselEcommerce.dto.usuario.UsuarioUpdateDto;
 import com.example.LautaroDieselEcommerce.service.UsuarioService;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,12 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    public BaseResponse<UsuarioDto> crearUsuario(@RequestBody UsuarioCreateDto dto) {
+    public BaseResponse<UsuarioDto> crearUsuario(@Valid @RequestBody UsuarioCreateDto dto) {
         return usuarioService.crearUsuario(dto);
     }
 
     @PutMapping("/{id}")
-    public BaseResponse<UsuarioDto> actualizarUsuario(@PathVariable Long id, @RequestBody UsuarioUpdateDto dto) {
+    public BaseResponse<UsuarioDto> actualizarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateDto dto) {
         return usuarioService.actualizarUsuario(id, dto);
     }
 

@@ -1,5 +1,6 @@
 package com.example.LautaroDieselEcommerce.entity.usuario;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -24,15 +26,7 @@ public class RolEntity {
     @Column(name = "Nombre", nullable = false, unique = true)
     private String nombre;
 
-    @Column(name = "Descripcion")
-    private String descripcion;
-
-    @Column(name = "FechaCreacion")
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @Column(name = "FechaModificacion")
-    private LocalDateTime fechaModificacion = LocalDateTime.now();
-
     @ManyToMany(mappedBy = "roles")
-    private Set<UsuarioEntity> usuarios;
+    @JsonIgnore
+    private List<UsuarioEntity> usuarios;
 }

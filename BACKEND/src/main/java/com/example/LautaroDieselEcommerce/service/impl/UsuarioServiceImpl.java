@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +39,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             return new BaseResponse<>("El correo ya está registrado", 400, null);
         }
 
-        Set<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds()).stream().collect(Collectors.toSet());
+        List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
 
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .correo(dto.getCorreo())
@@ -69,7 +70,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                     usuario.setSegmento(dto.getSegmento());
                     usuario.setFechaActualizacion(LocalDateTime.now());
 
-                    Set<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds()).stream().collect(Collectors.toSet());
+                    List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
                     usuario.setRoles(roles);
 
                     usuarioRepository.save(usuario);
@@ -115,8 +116,8 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .roles(usuario.getRoles() != null
                         ? usuario.getRoles().stream()
                         .map(RolEntity::getNombre)
-                        .collect(Collectors.toSet())
-                        : new HashSet<>()) // si es null, devuelvo set vacío
+                        .toList()  // convertimos a List
+                        : new ArrayList<>()) // lista vacía si es null
                 .build();
     }
 

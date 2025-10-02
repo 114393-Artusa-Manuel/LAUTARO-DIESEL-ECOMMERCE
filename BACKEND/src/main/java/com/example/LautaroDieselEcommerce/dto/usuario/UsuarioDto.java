@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -20,5 +21,5 @@ public class UsuarioDto {
     private String telefono;
     private String segmento;
     private Boolean activo;
-    private Set<String> roles;
+    private List<String> roles;
 }

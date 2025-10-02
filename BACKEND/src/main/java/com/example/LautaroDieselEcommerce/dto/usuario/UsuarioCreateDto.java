@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -26,5 +27,5 @@ public class UsuarioCreateDto {
 
     private String telefono;
 
-    private Set<Long> rolesIds;
+    private List<Long> rolesIds;
 }

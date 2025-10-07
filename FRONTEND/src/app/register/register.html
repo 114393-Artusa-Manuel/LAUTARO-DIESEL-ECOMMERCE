@@ -1,0 +1,27 @@
+<form [formGroup]="f" (ngSubmit)="submit()" novalidate>
+  <label>
+    Correo
+    <input formControlName="correo" type="email" required />
+  </label>
+
+  <label>
+    Clave
+    <input formControlName="clave" type="password" minlength="4" required />
+  </label>
+
+  <label>
+    Nombre completo
+    <input formControlName="nombreCompleto" required />
+  </label>
+
+  <label>
+    Teléfono
+    <input formControlName="telefono" />
+  </label>
+
+  <!-- rolesIds oculto o editable si querés -->
+  <button type="submit">Registrarme</button>
+</form>
+
+<p *ngIf="mensaje">{{ mensaje }}</p>
+<p *ngIf="error" style="color:red">{{ error }}</p>

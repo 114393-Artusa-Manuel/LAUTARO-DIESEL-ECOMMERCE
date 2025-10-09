@@ -1,18 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap} from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
-export interface RegistroReq {
+interface LoginRequest {
   correo: string;
-  clave: string;
-  nombreCompleto: string;
-  telefono: string;
-  rolesIds: number[];
-}
-
-export interface LoginReq {
-  correo: string;
-  clave: string;
+  password: string;
 }
 
 interface LoginResponse {
@@ -35,15 +27,15 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  login(request: LoginReq): Observable<LoginResponse> {
+  login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(this.apiUrl, request).pipe(
       tap((response) => {
-        // Guardar token y datos del usuario
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('usuario', JSON.stringify(response.data));
       })
     );
   }
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
@@ -54,26 +46,12 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
+    // ✅ Este es el método que te faltaba o Angular no encontraba
     return !!localStorage.getItem('token');
   }
 
   getUsuario(): any {
     const usuario = localStorage.getItem('usuario');
     return usuario ? JSON.parse(usuario) : null;
-  }
-}
-
-@Injectable({ providedIn: 'root' })
-export class UsuarioService {
-  private apiUrl = 'http://localhost:8080/api/usuarios';
-
-  constructor(private http: HttpClient) {}
-
-  registrarUsuario(data: RegistroReq): Observable<any> {
-    return this.http.post(this.apiUrl, data);
-  }
-
-  iniciarSesion(data: LoginReq): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, data);
   }
 }

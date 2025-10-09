@@ -25,7 +25,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public BaseResponse<LoginResponse> login(LoginRequest request) {
-        UsuarioEntity usuario = usuarioRepository.findByCorreo(request.getEmail())
+        System.out.println("📩 CORREO RECIBIDO: " + request.getCorreo());
+        System.out.println("🔒 PASSWORD RECIBIDO: " + request.getPassword());
+        UsuarioEntity usuario = usuarioRepository.findByCorreo(request.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getClaveHash())) {

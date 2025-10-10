@@ -26,34 +26,58 @@ export class Register {
 
   mensaje = '';
   error = '';
+  loading = false;
+  backendDown = false;
+  showSuccess = false;
 
-  f = this.fb.nonNullable.group<RegistroForm>({
-    correo: '',
-    clave: '',
-    nombreCompleto: '',
-    telefono: '',
-    rolesIds: [1],
-  }, {
-    validators: [
-      Validators.required,
-    ]
-  });
+  f = this.fb.group({
+    correo: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
+    clave: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(128)]],
+    nombreCompleto: ['', [Validators.required, Validators.maxLength(120)]],
+    telefono: ['', [Validators.maxLength(20)]],
+    rolesIds: [[1]],
+  }) as any; // cast to bypass strict typed form controls in this simple component
 
   submit() {
-  if (this.f.invalid) return;
-  const v = this.f.getRawValue();
-  const payload = {
-    ...v,
-    rolesIds: Array.isArray(v.rolesIds) ? v.rolesIds : [v.rolesIds], // <-- fuerza array
-  };
-  this.api.registrarUsuario(payload).subscribe({
-    next: () => {
-      this.mensaje = 'Usuario registrado correctamente';
-      this.router.navigateByUrl('/login');
-    },
-    error: (err) => {
-      this.error = err?.error?.message || err?.message || 'Error al registrar';
+    if (this.f.invalid) {
+      this.f.markAllAsTouched();
+      return;
     }
-  });
-}
+
+    this.loading = true;
+    this.error = '';
+    this.backendDown = false;
+
+    const v = this.f.getRawValue();
+    const payload = {
+      ...v,
+      rolesIds: Array.isArray(v.rolesIds) ? v.rolesIds : [v.rolesIds],
+    };
+
+    this.api.registrarUsuario(payload).subscribe({
+      next: () => {
+        this.loading = false;
+        this.showSuccess = true;
+        // auto-redirect after a short delay
+        setTimeout(() => this.closeSuccess(true), 2200);
+      },
+      error: (err) => {
+        this.loading = false;
+        // Network / CORS / server down often surface as status 0 or undefined
+        if (err?.status === 0 || err?.status === undefined) {
+          this.backendDown = true;
+          this.error = 'No se pudo conectar con el servidor. Verificá que el backend esté encendido en http://localhost:8080';
+          return;
+        }
+        this.error = err?.error?.message || err?.message || 'Error al registrar';
+      },
+    });
+  }
+
+  closeSuccess(redirect = false) {
+    this.showSuccess = false;
+    if (redirect) {
+      this.router.navigateByUrl('/login');
+    }
+  }
 }

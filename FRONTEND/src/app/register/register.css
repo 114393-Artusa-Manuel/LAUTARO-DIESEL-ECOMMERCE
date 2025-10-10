@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.modal-dialog {
+  max-width: 420px;
+  width: 90%;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* small accessibility hint */
+.invalid-feedback.d-block {
+  font-size: 0.9rem;
+  color: #d9534f;
+}

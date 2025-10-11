@@ -1,1 +1,44 @@
-<p>profile works!</p>
+<div class="container py-4">
+	<div class="row justify-content-center">
+		<div class="col-12 col-md-8 col-lg-6">
+			<div class="card shadow-sm">
+				<div class="card-body p-4">
+					<div class="d-flex justify-content-between align-items-start mb-3">
+						<h4 class="mb-0">Mi perfil</h4>
+						<button class="btn btn-outline-secondary btn-sm" (click)="logout()">Cerrar sesión</button>
+					</div>
+
+					<div *ngIf="!usuario" class="alert alert-warning">No estás autenticado. <a routerLink="/login">Ingresar</a></div>
+
+					<div *ngIf="usuario">
+						<div class="mb-3">
+							<label class="form-label text-muted">Nombre</label>
+							<div class="profile-value">{{ usuario.nombre || usuario.nombreCompleto || usuario.nombreCompleto }}</div>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label text-muted">Email</label>
+							<div class="profile-value">{{ usuario.email || usuario.correo }}</div>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label text-muted">ID</label>
+							<div class="profile-value">{{ usuario.id }}</div>
+						</div>
+
+					
+
+						<div class="mb-3">
+							<label class="form-label text-muted">Rol</label>
+							<div class="profile-value">{{ roleName }}</div>
+						</div>
+
+						<div class="mt-4 text-end">
+							<a routerLink="/" class="btn btn-link">Volver al inicio</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

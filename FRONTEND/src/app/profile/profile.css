@@ -1,0 +1,23 @@
+:root{
+  --card-padding: 1rem;
+}
+
+.profile-value{
+  font-size: 1rem;
+  color: #222;
+  padding: 0.45rem 0.6rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+@media (max-width: 576px){
+  .profile-value{ font-size: .95rem }
+}
+
+.text-truncate{
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

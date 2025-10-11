@@ -8,7 +8,9 @@
 						<button class="btn btn-outline-secondary btn-sm" (click)="logout()">Cerrar sesión</button>
 					</div>
 
-					<div *ngIf="!usuario" class="alert alert-warning">No estás autenticado. <a routerLink="/login">Ingresar</a></div>
+						<div *ngIf="!usuario" class="alert alert-warning">No estás autenticado o no se pudo obtener la información del perfil. <a routerLink="/login">Ingresar</a>
+							<button class="btn btn-sm btn-outline-secondary ms-2" routerLink="/">Volver</button>
+						</div>
 
 					<div *ngIf="usuario">
 						<div class="mb-3">

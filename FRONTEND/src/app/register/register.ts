@@ -52,6 +52,19 @@ export class Register {
     } catch (e) {
       // ignore if controls aren't initialized in some environments
     }
+    // initial backend reachability check
+    this.checkBackend();
+  }
+
+  checkBackend() {
+    this.api.ping().subscribe((ok) => {
+      this.backendDown = !ok;
+      if (!ok) {
+        this.error = 'No se pudo conectar con el servidor. Verificá que el backend esté encendido';
+      } else {
+        this.error = '';
+      }
+    });
   }
 
   submit() {

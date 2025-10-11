@@ -13,6 +13,7 @@ import { AuthService } from '../services/usuarioService';
 export class Profile {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private api = inject(AuthService as any); // using AuthService module which re-exports UsuarioService in this project
 
   usuario: any = null;
   roleName: string = '—';
@@ -20,6 +21,17 @@ export class Profile {
   constructor() {
     this.usuario = this.auth.getUsuario();
     this.roleName = this.deriveRoleName(this.usuario);
+    // check backend reachability briefly
+    // (if you have a dedicated ping endpoint we should use that instead)
+    // Note: injected api above is a workaround; if project structure differs update accordingly.
+    try {
+      (this.api as any).ping?.().subscribe?.((ok: boolean) => {
+        if (!ok) {
+          // backend might be down — show a warning in the UI (handled in template)
+          this.usuario = null;
+        }
+      });
+    } catch (e) {}
   }
 
   logout() {

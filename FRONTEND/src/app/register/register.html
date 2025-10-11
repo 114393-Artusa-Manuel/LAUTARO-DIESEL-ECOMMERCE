@@ -8,6 +8,9 @@
           <div *ngIf="backendDown" class="alert alert-danger" role="alert">
             No se pudo conectar con el servidor. Verificá que el backend esté encendido en
             <strong>http://localhost:8080</strong>
+            <div class="mt-2">
+              <button class="btn btn-sm btn-outline-light" (click)="checkBackend()">Reintentar</button>
+            </div>
           </div>
 
           <form [formGroup]="f" (ngSubmit)="submit()" novalidate>

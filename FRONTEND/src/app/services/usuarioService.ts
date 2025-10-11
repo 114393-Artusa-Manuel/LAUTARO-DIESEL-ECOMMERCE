@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap} from 'rxjs';
+import { Observable, tap, map, catchError, of } from 'rxjs';
 
 export interface RegistroReq {
   correo: string;
@@ -71,6 +71,17 @@ export class UsuarioService {
 
   registrarUsuario(data: RegistroReq): Observable<any> {
     return this.http.post(this.apiUrl, data);
+  }
+
+  /**
+   * Lightweight ping to check whether the backend is reachable.
+   * Returns an observable that emits true when reachable, false otherwise.
+   */
+  ping(): Observable<boolean> {
+    return this.http.get(this.apiUrl, { observe: 'response' as const }).pipe(
+      map(() => true),
+      catchError(() => of(false)),
+    );
   }
 
   iniciarSesion(data: LoginReq): Observable<any> {

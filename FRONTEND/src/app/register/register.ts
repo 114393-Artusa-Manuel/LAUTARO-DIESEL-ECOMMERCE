@@ -31,8 +31,8 @@ export class Register {
   showSuccess = false;
 
   f = this.fb.group({
-    correo: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
-    clave: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(128)]],
+    correo: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
+    clave: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(20)]],
     nombreCompleto: ['', [Validators.required, Validators.maxLength(120)]],
     telefono: ['', [Validators.maxLength(20)]],
     rolesIds: [[1]],

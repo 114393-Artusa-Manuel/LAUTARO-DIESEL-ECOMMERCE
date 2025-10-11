@@ -38,6 +38,22 @@ export class Register {
     rolesIds: [[1]],
   }) as any; // cast to bypass strict typed form controls in this simple component
 
+  constructor() {
+    // Clear server-side 'taken' error when user edits the correo field
+    try {
+      const correoControl = this.f.controls.correo;
+      correoControl.valueChanges.subscribe(() => {
+        if (correoControl.errors && correoControl.errors['taken']) {
+          const newErrs = { ...correoControl.errors };
+          delete newErrs['taken'];
+          correoControl.setErrors(Object.keys(newErrs).length ? newErrs : null);
+        }
+      });
+    } catch (e) {
+      // ignore if controls aren't initialized in some environments
+    }
+  }
+
   submit() {
     if (this.f.invalid) {
       this.f.markAllAsTouched();
@@ -55,7 +71,29 @@ export class Register {
     };
 
     this.api.registrarUsuario(payload).subscribe({
-      next: () => {
+      next: (res: any) => {
+        // Some backends wrap responses in an object with a 'codigo' and 'mensaje' and
+        // may still return HTTP 200. Handle that: if codigo !== 201 treat as error.
+        if (res && typeof res === 'object' && 'codigo' in res) {
+          const code = Number(res.codigo);
+          const msg = res.mensaje || res.message || '';
+          if (code !== 201) {
+            // Map known backend message to correo 'taken' if it says the email exists
+            const isEmailTaken = code === 400 && /correo|email|ya existe|ya está registrado/i.test(msg);
+            if (isEmailTaken) {
+              try {
+                const correoControl = this.f.controls.correo;
+                const errs = { ...(correoControl.errors || {}), taken: true };
+                correoControl.setErrors(errs);
+              } catch (e) {}
+            }
+            this.loading = false;
+            this.error = msg || 'Error al registrar';
+            return;
+          }
+          // else proceed as success
+        }
+
         this.loading = false;
         this.showSuccess = true;
         // auto-redirect after a short delay
@@ -69,7 +107,24 @@ export class Register {
           this.error = 'No se pudo conectar con el servidor. Verificá que el backend esté encendido en http://localhost:8080';
           return;
         }
-        this.error = err?.error?.message || err?.message || 'Error al registrar';
+
+  // Prefer Spanish 'mensaje' field used by backend, fall back to other common fields
+  const serverMsg = err?.error?.message || err?.error?.mensaje || err?.message || '';
+  // Consider email taken when server returns 409, or when message/body indicates the email already exists
+  const isEmailTaken = err?.status === 409 || /correo|email|ya existe|ya está registrado|already.*exist|already.*registered/i.test(serverMsg);
+        if (isEmailTaken) {
+          try {
+            const correoControl = this.f.controls.correo;
+            const errs = { ...(correoControl.errors || {}), taken: true };
+            correoControl.setErrors(errs);
+          } catch (e) {
+            // ignore
+          }
+          this.error = 'El correo ya está registrado.';
+          return;
+        }
+
+        this.error = serverMsg || 'Error al registrar';
       },
     });
   }

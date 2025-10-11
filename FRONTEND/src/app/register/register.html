@@ -18,6 +18,7 @@
                 <div *ngIf="f.controls.correo.hasError('required')">El correo es obligatorio.</div>
                 <div *ngIf="f.controls.correo.hasError('email')">Ingresá un correo válido (ej: ejemplo@gmail.com).</div>
                 <div *ngIf="f.controls.correo.hasError('maxlength')">Máximo 254 caracteres.</div>
+                <div *ngIf="f.controls.correo.hasError('taken')" class="text-danger">El correo ya está registrado.</div>
               </div>
             </div>
 

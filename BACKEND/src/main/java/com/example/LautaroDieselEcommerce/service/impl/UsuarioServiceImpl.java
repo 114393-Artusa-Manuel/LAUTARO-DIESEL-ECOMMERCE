@@ -38,9 +38,21 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             return new BaseResponse<>("El correo ya está registrado", 400, null);
         }
-
-        List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
-
+        List<RolEntity> roles;
+        
+        if (dto.getRolesIds() == null || dto.getRolesIds().isEmpty()) {
+            RolEntity rolParticular = rolRepository.findByNombre("particular")
+                    .orElseGet(() -> {
+                        RolEntity nuevo = RolEntity.builder()
+                                .nombre("particular")
+                                .build();
+                        return rolRepository.save(nuevo);
+                    });
+            roles = new ArrayList<>();
+            roles.add(rolParticular);
+        } else {
+            roles = rolRepository.findAllById(dto.getRolesIds());
+        }
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .correo(dto.getCorreo())
                 .claveHash(passwordEncoder.encode(dto.getClave()))
@@ -70,8 +82,10 @@ public class UsuarioServiceImpl implements UsuarioService {
                     usuario.setSegmento(dto.getSegmento());
                     usuario.setFechaActualizacion(LocalDateTime.now());
 
-                    List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
-                    usuario.setRoles(roles);
+                    if (dto.getRolesIds() != null) {
+                        List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
+                        usuario.setRoles(roles);
+                    }
 
                     usuarioRepository.save(usuario);
                     return new BaseResponse<>("Usuario actualizado", 200, mapToDTO(usuario));

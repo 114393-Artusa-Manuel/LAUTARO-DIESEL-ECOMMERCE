@@ -8,8 +8,10 @@ import com.example.LautaroDieselEcommerce.entity.usuario.UsuarioEntity;
 import com.example.LautaroDieselEcommerce.repository.usuario.UsuarioRepository;
 import com.example.LautaroDieselEcommerce.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -28,15 +30,17 @@ public class AuthServiceImpl implements AuthService {
         System.out.println("📩 CORREO RECIBIDO: " + request.getCorreo());
         System.out.println("🔒 PASSWORD RECIBIDO: " + request.getPassword());
         UsuarioEntity usuario = usuarioRepository.findByCorreo(request.getCorreo())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getClaveHash())) {
-            return new BaseResponse<>("Contraseña incorrecta", 400, null);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
         }
 
         if (!usuario.getActivo()) {
-            return new BaseResponse<>("Usuario inactivo", 400, null);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario inactivo");
         }
+
 
         String token = jwtTokenUtil.generateToken(usuario);
 

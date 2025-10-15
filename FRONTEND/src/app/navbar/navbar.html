@@ -7,14 +7,20 @@
 
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav ms-auto">
-      <li class="nav-item">
+      <li class="nav-item" *ngIf="!isAuthenticated()">
         <a class="nav-link" routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item" *ngIf="!isAuthenticated()">
         <a class="nav-link" routerLink="/register" routerLinkActive="active">Registrarse</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item" *ngIf="isAuthenticated()">
         <a class="nav-link" routerLink="/profile" routerLinkActive="active">Ver perfil</a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin()">
+        <a class="nav-link" routerLink="/panel-admin" routerLinkActive="active">Panel</a>
+      </li>
+      <li class="nav-item" *ngIf="isAuthenticated()">
+        <a class="nav-link" (click)="logout()">Cerrar sesión</a>
       </li>
     </ul>
   </div>

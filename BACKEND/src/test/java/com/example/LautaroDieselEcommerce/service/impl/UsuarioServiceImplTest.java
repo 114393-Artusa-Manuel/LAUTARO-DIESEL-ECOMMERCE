@@ -53,10 +53,6 @@ class UsuarioServiceImplTest {
                 .build();
     }
 
-    // ============================================================
-    // ✅ CREAR USUARIO
-    // ============================================================
-
     @Test
     void crearUsuario_CorreoExistente_DeberiaRetornar400() {
         UsuarioCreateDto dto = new UsuarioCreateDto();
@@ -92,10 +88,6 @@ class UsuarioServiceImplTest {
         assertNotNull(response.getData());
         verify(usuarioRepository, times(1)).save(any());
     }
-
-    // ============================================================
-    // ✅ ACTUALIZAR USUARIO
-    // ============================================================
 
     @Test
     void actualizarUsuario_Existente_DeberiaActualizarYRetornar200() {
@@ -152,10 +144,6 @@ class UsuarioServiceImplTest {
         assertEquals("Usuario no encontrado", response.getMensaje());
     }
 
-    // ============================================================
-    // ✅ ELIMINAR USUARIO
-    // ============================================================
-
     @Test
     void eliminarUsuario_Existente_DeberiaEliminarYRetornar200() {
         when(usuarioRepository.existsById(1L)).thenReturn(true);
@@ -179,10 +167,6 @@ class UsuarioServiceImplTest {
         verify(usuarioRepository, never()).deleteById(any());
     }
 
-    // ============================================================
-    // ✅ OBTENER USUARIO POR ID
-    // ============================================================
-
     @Test
     void obtenerUsuarioPorId_Existente_DeberiaRetornarUsuario() {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
@@ -204,10 +188,6 @@ class UsuarioServiceImplTest {
         assertEquals("Usuario no encontrado", response.getMensaje());
     }
 
-    // ============================================================
-    // ✅ LISTAR USUARIOS
-    // ============================================================
-
     @Test
     void listarUsuarios_DeberiaRetornarLista() {
         when(usuarioRepository.findAll()).thenReturn(List.of(usuario));
@@ -228,10 +208,6 @@ class UsuarioServiceImplTest {
         assertEquals(0, response.getData().size());
         assertEquals("Listado de usuarios", response.getMensaje());
     }
-
-    // ============================================================
-    // ✅ mapToDTO (indirectamente cubierto, pero test explícito)
-    // ============================================================
 
     @Test
     void mapToDTO_UsuarioSinRoles_DeberiaRetornarListaVacia() throws Exception {

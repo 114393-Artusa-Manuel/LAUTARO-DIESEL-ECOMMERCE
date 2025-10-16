@@ -46,10 +46,6 @@ class UsuarioRoleServiceImplTest {
         usuario.setRoles(new ArrayList<>());
     }
 
-    // ============================================================
-    // ✅ TEST: ADD ROLE
-    // ============================================================
-
     @Test
     void addRole_Exitoso_DeberiaAgregarYGuardarUsuario() {
         when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuario));
@@ -110,10 +106,6 @@ class UsuarioRoleServiceImplTest {
         verify(usuarioRepository, never()).save(any());
     }
 
-    // ============================================================
-    // ✅ TEST: REMOVE ROLE
-    // ============================================================
-
     @Test
     void removeRole_Exitoso_DeberiaEliminarRolYGuardarUsuario() {
         usuario.setRoles(new ArrayList<>(List.of(rol)));
@@ -170,10 +162,6 @@ class UsuarioRoleServiceImplTest {
         assertTrue(usuario.getRoles().isEmpty());
         verify(usuarioRepository, never()).save(any());
     }
-
-    // ============================================================
-    // ✅ TEST: FECHA ACTUALIZACIÓN
-    // ============================================================
 
     @Test
     void addRole_DebeActualizarFechaActualizacion() {

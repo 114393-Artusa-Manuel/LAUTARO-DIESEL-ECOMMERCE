@@ -51,7 +51,6 @@ class AuthServiceImplTest {
 
     @Test
     void login_Exitoso_DeberiaRetornarBaseResponseConToken() {
-        // Arrange
         LoginRequest request = new LoginRequest();
         request.setCorreo("test@example.com");
         request.setPassword("1234");
@@ -60,10 +59,8 @@ class AuthServiceImplTest {
         when(passwordEncoder.matches("1234", "encodedPass")).thenReturn(true);
         when(jwtTokenUtil.generateToken(usuario)).thenReturn("jwt-token");
 
-        // Act
         BaseResponse<LoginResponse> response = authService.login(request);
 
-        // Assert
         assertNotNull(response);
         assertEquals(200, response.getCodigo());
         assertEquals("Login exitoso", response.getMensaje());
@@ -74,14 +71,12 @@ class AuthServiceImplTest {
 
     @Test
     void login_UsuarioNoEncontrado_DeberiaLanzarNotFound() {
-        // Arrange
         LoginRequest request = new LoginRequest();
         request.setCorreo("noexiste@example.com");
         request.setPassword("1234");
 
         when(usuarioRepository.findByCorreo("noexiste@example.com")).thenReturn(Optional.empty());
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> authService.login(request));
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
@@ -91,7 +86,6 @@ class AuthServiceImplTest {
 
     @Test
     void login_PasswordIncorrecta_DeberiaLanzarUnauthorized() {
-        // Arrange
         LoginRequest request = new LoginRequest();
         request.setCorreo("test@example.com");
         request.setPassword("wrongpass");
@@ -99,7 +93,6 @@ class AuthServiceImplTest {
         when(usuarioRepository.findByCorreo("test@example.com")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches("wrongpass", "encodedPass")).thenReturn(false);
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> authService.login(request));
         assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
@@ -108,7 +101,6 @@ class AuthServiceImplTest {
 
     @Test
     void login_UsuarioInactivo_DeberiaLanzarBadRequest() {
-        // Arrange
         LoginRequest request = new LoginRequest();
         request.setCorreo("test@example.com");
         request.setPassword("1234");
@@ -118,7 +110,6 @@ class AuthServiceImplTest {
         when(usuarioRepository.findByCorreo("test@example.com")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches("1234", "encodedPass")).thenReturn(true);
 
-        // Act & Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> authService.login(request));
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());

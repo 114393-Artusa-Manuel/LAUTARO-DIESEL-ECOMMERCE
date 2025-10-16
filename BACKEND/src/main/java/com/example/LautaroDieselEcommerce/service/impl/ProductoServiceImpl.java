@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -98,10 +99,15 @@ public class ProductoServiceImpl implements ProductoService {
                 .slug(entity.getSlug())
                 .descripcion(entity.getDescripcion())
                 .activo(entity.getActivo())
-                .marcasIds(entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet()))
-                .categoriasIds(entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet()))
+                .marcasIds(entity.getMarcas() != null
+                        ? entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet())
+                        : new HashSet<>())
+                .categoriasIds(entity.getCategorias() != null
+                        ? entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet())
+                        : new HashSet<>())
                 .build();
     }
+
 
     private ProductoEntity toEntity(ProductoDto dto) {
         ProductoEntity producto = ProductoEntity.builder()

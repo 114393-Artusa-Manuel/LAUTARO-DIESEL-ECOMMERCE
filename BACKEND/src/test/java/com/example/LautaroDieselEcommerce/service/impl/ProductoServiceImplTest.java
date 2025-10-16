@@ -169,4 +169,65 @@ class ProductoServiceImplTest {
         assertEquals("Producto no encontrado", response.getMensaje());
         verify(productoRepository, never()).deleteById(any());
     }
+
+    @Test
+    void update_SinMarcasYCategorias_DeberiaActualizarIgual() {
+        ProductoDto dto = ProductoDto.builder()
+                .nombre("Producto sin marcas")
+                .slug("producto-sin-marcas")
+                .descripcion("sin marcas ni categorías")
+                .activo(true)
+                .marcasIds(null)
+                .categoriasIds(null)
+                .build();
+
+        ProductoEntity productoEntity = ProductoEntity.builder()
+                .idProducto(1L)
+                .nombre("Viejo Producto")
+                .slug("viejo-producto")
+                .descripcion("Viejo desc")
+                .activo(true)
+                .build();
+
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(productoEntity));
+        when(productoRepository.save(any())).thenReturn(productoEntity);
+
+        BaseResponse<ProductoDto> response = productoService.update(1L, dto);
+
+        assertEquals(200, response.getCodigo());
+        assertEquals("Producto actualizado correctamente", response.getMensaje());
+        verify(productoRepository, times(1)).save(any());
+    }
+
+    @Test
+    void create_SinMarcasYCategorias_DeberiaCrearIgual() {
+        ProductoDto dto = ProductoDto.builder()
+                .nombre("Producto sin marcas")
+                .slug("producto-sin-marcas")
+                .descripcion("sin marcas ni categorías")
+                .activo(true)
+                .marcasIds(null)
+                .categoriasIds(null)
+                .build();
+
+        when(productoRepository.existsBySlug(dto.getSlug())).thenReturn(false);
+        when(productoRepository.save(any())).thenReturn(
+                ProductoEntity.builder()
+                        .idProducto(1L)
+                        .nombre(dto.getNombre())
+                        .slug(dto.getSlug())
+                        .descripcion(dto.getDescripcion())
+                        .activo(true)
+                        .marcas(new HashSet<>())
+                        .categorias(new HashSet<>())
+                        .build()
+        );
+
+        BaseResponse<ProductoDto> response = productoService.create(dto);
+
+        assertEquals(201, response.getCodigo());
+        assertEquals("Producto creado correctamente", response.getMensaje());
+        assertNotNull(response.getData());
+    }
+
 }

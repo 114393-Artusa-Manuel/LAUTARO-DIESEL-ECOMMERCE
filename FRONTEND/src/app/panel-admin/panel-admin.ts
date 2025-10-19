@@ -45,6 +45,8 @@ export class PanelAdmin implements OnDestroy {
   availableRoles: Array<{ id: number; nombre: string }> = [];
   assignLoading = false;
   selectedRoleIds = new Set<number>();
+  // dev helper: decoded token claims for debugging
+  decodedToken: any = null;
 
   constructor() {
     // filtros con debounce
@@ -158,6 +160,15 @@ export class PanelAdmin implements OnDestroy {
   openAssign(user: any) {
     this.assigningTo = user;
     this.selectedRoleIds.clear();
+    // decode current token for debugging
+    try {
+      const t = this.auth.getToken();
+      if (t) {
+        const payload = t.split('.').slice(1,2)[0];
+        const json = JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+        this.decodedToken = json;
+      } else this.decodedToken = null;
+    } catch (e) { this.decodedToken = null; }
 
     const uid = user.id || user.idUsuario || user.userId;
     const token = this.auth.getToken();
@@ -203,15 +214,23 @@ export class PanelAdmin implements OnDestroy {
     const roleIds = Array.from(this.selectedRoleIds.values());
 
     this.assignLoading = true;
-    this.rolesApi.setUserRoles(uid, roleIds, token ?? undefined).subscribe({
+  try { console.log('[PanelAdmin] saveRoles', { uid, roleIds, hasToken: !!token }); } catch {}
+  this.assignLoading = true;
+  this.rolesApi.setUserRoles(uid, roleIds, token ?? undefined).subscribe({
       next: () => {
         this.assignLoading = false;
         this.cancelAssign();
         this.loadUsuarios();
       },
-      error: () => {
+      error: (err: any) => {
         this.assignLoading = false;
-        this.error = 'Error al guardar roles';
+        try {
+          // Prefer backend message when available
+          const msg = err?.error ?? err?.message ?? JSON.stringify(err);
+          this.error = typeof msg === 'string' ? msg : JSON.stringify(msg);
+        } catch (e) {
+          this.error = 'Error al guardar roles';
+        }
       }
     });
   }

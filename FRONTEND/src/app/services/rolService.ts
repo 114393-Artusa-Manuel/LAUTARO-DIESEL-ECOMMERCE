@@ -15,40 +15,46 @@ export class RolesService {
 
   // roles actuales de un usuario
   getUserRoles(userId: number | string, token?: string) {
-    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    return this.http.get<Array<{ id: number; nombre: string }>>(
-      `${this.base}/RoleAssigne/${userId}/roles`,
-      { headers }
-    );
+    // if caller didn't provide a token, try reading it from localStorage (browser)
+    let t = token;
+    if (!t && typeof window !== 'undefined' && window.localStorage) {
+      t = localStorage.getItem('token') ?? undefined;
+    }
+    const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
+    return this.http.get<Array<{ id: number; nombre: string }>>(`${this.base}/RoleAssigne/${userId}/roles`, { headers });
   }
 
   // set idempotente: reemplaza por el conjunto exacto
   setUserRoles(userId: number | string, roleIds: number[], token?: string) {
-    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    return this.http.put(
-      `${this.base}/RoleAssigne/${userId}/roles`,
-      { roleIds },
-      { headers }
-    );
+    let t = token;
+    if (!t && typeof window !== 'undefined' && window.localStorage) {
+      t = localStorage.getItem('token') ?? undefined;
+    }
+    const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
+    // Dev debug info
+  try { console.log('[RolesService] setUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles`, roleIds, token: !!t }); } catch {}
+    return this.http.put(`${this.base}/RoleAssigne/${userId}/roles`, { roleIds }, { headers });
   }
 
   // opcionales granulares
   addUserRoles(userId: number | string, roleIds: number[], token?: string) {
-    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    return this.http.post(
-      `${this.base}/RoleAssigne/${userId}/roles/add`,
-      { roleIds },
-      { headers }
-    );
+    let t = token;
+    if (!t && typeof window !== 'undefined' && window.localStorage) {
+      t = localStorage.getItem('token') ?? undefined;
+    }
+    const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
+  try { console.log('[RolesService] addUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles/add`, roleIds, token: !!t }); } catch {}
+    return this.http.post(`${this.base}/RoleAssigne/${userId}/roles/add`, { roleIds }, { headers });
   }
 
   removeUserRoles(userId: number | string, roleIds: number[], token?: string) {
-    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-    return this.http.request(
-      'DELETE',
-      `${this.base}/RoleAssigne/${userId}/roles/remove`,
-      { body: { roleIds }, headers }
-    );
+    let t = token;
+    if (!t && typeof window !== 'undefined' && window.localStorage) {
+      t = localStorage.getItem('token') ?? undefined;
+    }
+    const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
+  try { console.log('[RolesService] removeUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles/remove`, roleIds, token: !!t }); } catch {}
+    return this.http.request('DELETE', `${this.base}/RoleAssigne/${userId}/roles/remove`, { body: { roleIds }, headers });
   }
 }
 

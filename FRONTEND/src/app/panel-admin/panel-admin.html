@@ -111,6 +111,11 @@
             }
           </div>
 
+          <!-- Dev-only: decoded token claims -->
+          @if (decodedToken) {
+            <div class="alert alert-light small mt-2">Token claims: <pre style="white-space:pre-wrap">{{ decodedToken | json }}</pre></div>
+          }
+
           <div class="d-flex justify-content-between mb-2">
             <div class="btn-group btn-group-sm">
               <button class="btn btn-outline-secondary" (click)="selectNone()" [disabled]="assignLoading">Ninguno</button>

@@ -42,6 +42,15 @@ export class AuthService {
         if (typeof window !== 'undefined' && window.localStorage) {
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('usuario', JSON.stringify(response.data));
+          try {
+            // notify other in-app services (same-window) that the user changed
+            if (typeof window !== 'undefined' && typeof (window as any).dispatchEvent === 'function') {
+              const ev = new CustomEvent('app:user-updated', { detail: response.data });
+              window.dispatchEvent(ev);
+            }
+          } catch (e) {
+            // ignore
+          }
         }
       })
     );
@@ -50,6 +59,12 @@ export class AuthService {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
+      try {
+        if (typeof window !== 'undefined' && typeof (window as any).dispatchEvent === 'function') {
+          const ev = new CustomEvent('app:user-updated', { detail: null });
+          window.dispatchEvent(ev);
+        }
+      } catch (e) {}
     }
   }
 

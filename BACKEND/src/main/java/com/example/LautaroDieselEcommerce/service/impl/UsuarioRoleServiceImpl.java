@@ -43,45 +43,52 @@ public class UsuarioRoleServiceImpl implements UsuarioRoleService {
     }
 
 
-    
-
-
-    @Override
-    public void addRole(Long usuarioId, List<Long> roleIds) {
-        
-    }
-
-
-    @Override
+   @Override
     public void removeRole(Long usuarioId, List<Long> roleIds) {
-        UsuarioEntity usuario = usuarioRepo.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        RolEntity rol = rolRepo.findById(roleIds.get(0))
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+       UsuarioEntity usuario = usuarioRepo.findById(usuarioId)
+               .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Ensure roles list is initialized to avoid NPE
-        if (usuario.getRoles() == null) {
-            usuario.setRoles(new ArrayList<>());
-        }
+       // Ensure roles list is initialized to avoid NPE
+       if (usuario.getRoles() == null) {
+           usuario.setRoles(new ArrayList<>());
+       }
 
-        if (usuario.getRoles().stream().anyMatch(r -> Objects.equals(r.getId(), roleIds.get(0)))) {
-            usuario.getRoles().removeIf(r -> Objects.equals(r.getId(), roleIds.get(0)));
-            usuario.setFechaActualizacion(LocalDateTime.now());
-            usuarioRepo.save(usuario);
-        }
+        for (Long roleId : roleIds) {
+           // validar existencia de rol
+           rolRepo.findById(roleId)
+                   .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + roleId));
+
+           if (usuario.getRoles().stream().anyMatch(r -> Objects.equals(r.getId(), roleId))) {
+               usuario.getRoles().removeIf(r -> Objects.equals(r.getId(), roleId));
+           }
+       }
+
+       usuario.setFechaActualizacion(LocalDateTime.now());
+       usuarioRepo.save(usuario);
+   }
+
+    // Compatibility overload for single roleId
+    public void removeRole(Long usuarioId, Long roleId) {
+        removeRole(usuarioId, List.of(roleId));
     }
-
-
-    @Override
-    public void setRoles(Long idUsuario, List<Long> roleIds) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setRoles'");
-    }
-
 
     @Override
     public Object getRoles(Long idUsuario) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRoles'");
+        UsuarioEntity usuario = usuarioRepo.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return usuario.getRoles();
     }
+
+    @Override
+    public void setRoles(Long idUsuario, List<Long> roleIds) {
+        UsuarioEntity usuario = usuarioRepo.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<RolEntity> roles = rolRepo.findAllById(roleIds);
+        usuario.setRoles(roles);
+        usuario.setFechaActualizacion(LocalDateTime.now());
+        usuarioRepo.save(usuario);
+    }
+
+
 }

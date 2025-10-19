@@ -3,9 +3,9 @@
 		<div class="col-12 col-md-8 col-lg-6">
 			<div class="card shadow-sm">
 				<div class="card-body p-4">
-					<div class="d-flex justify-content-between align-items-start mb-3">
+						<div class="d-flex justify-content-between align-items-start mb-3">
 						<h4 class="mb-0">Mi perfil</h4>
-						<button class="btn btn-outline-secondary btn-sm" (click)="logout()">Cerrar sesión</button>
+						<button class="btn btn-outline-secondary btn-sm" (click)="openLogoutConfirm()">Cerrar sesión</button>
 					</div>
 
 						<div *ngIf="!usuario" class="alert alert-warning">No estás autenticado o no se pudo obtener la información del perfil. <a routerLink="/login">Ingresar</a>
@@ -43,4 +43,24 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Logout confirmation modal -->
+	<div *ngIf="showLogoutConfirm" class="profile-modal-backdrop" (click)="cancelLogout()">
+		<div class="profile-modal-dialog" role="dialog" (click)="$event.stopPropagation()">
+			<div class="profile-modal-content p-3">
+				<h5 class="mb-2">¿Estás seguro que quieres cerrar sesión?</h5>
+				<p class="small text-muted">Se cerrará tu sesión actual y volverás a la pantalla de inicio de sesión.</p>
+				<div class="text-end">
+					<button class="btn btn-outline-secondary me-2" (click)="cancelLogout()">Cancelar</button>
+					<button class="btn btn-danger" (click)="confirmLogout()">Cerrar sesión</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.profile-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6) !important; display:flex; align-items:center; justify-content:center; z-index:2050 !important; }
+		.profile-modal-dialog { max-width:420px; width:100%; padding: 12px; }
+		.profile-modal-content { background: #fff; border-radius: .375rem; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+	</style>
 </div>

@@ -60,7 +60,19 @@ export class Navbar {
     return false;
   }
 
-  logout() {
+  // Modal state for logout confirmation
+  showLogoutConfirm = false;
+
+  openLogoutConfirm() {
+    this.showLogoutConfirm = true;
+  }
+
+  cancelLogout() {
+    this.showLogoutConfirm = false;
+  }
+
+  confirmLogout() {
+    this.showLogoutConfirm = false;
     this.auth.logout();
     this.router.navigateByUrl('/login');
   }

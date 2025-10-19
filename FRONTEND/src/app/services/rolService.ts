@@ -1,6 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class RolesService {
@@ -32,8 +33,17 @@ export class RolesService {
     }
     const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
     // Dev debug info
-  try { console.log('[RolesService] setUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles`, roleIds, token: !!t }); } catch {}
-    return this.http.put(`${this.base}/RoleAssigne/${userId}/roles`, { roleIds }, { headers });
+    try { console.log('[RolesService] setUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles`, roleIds, token: !!t }); } catch {}
+    return this.http.put(`${this.base}/RoleAssigne/${userId}/roles`, { roleIds }, { headers }).pipe(
+      tap(() => {
+        try {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app:roles-updated', { detail: { userId, roleIds } }));
+            localStorage.setItem('rolesUpdatedAt', Date.now().toString());
+          }
+        } catch (e) {}
+      })
+    );
   }
 
   // opcionales granulares
@@ -43,8 +53,17 @@ export class RolesService {
       t = localStorage.getItem('token') ?? undefined;
     }
     const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
-  try { console.log('[RolesService] addUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles/add`, roleIds, token: !!t }); } catch {}
-    return this.http.post(`${this.base}/RoleAssigne/${userId}/roles/add`, { roleIds }, { headers });
+    try { console.log('[RolesService] addUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles/add`, roleIds, token: !!t }); } catch {}
+    return this.http.post(`${this.base}/RoleAssigne/${userId}/roles/add`, { roleIds }, { headers }).pipe(
+      tap(() => {
+        try {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app:roles-updated', { detail: { userId, roleIds } }));
+            localStorage.setItem('rolesUpdatedAt', Date.now().toString());
+          }
+        } catch (e) {}
+      })
+    );
   }
 
   removeUserRoles(userId: number | string, roleIds: number[], token?: string) {
@@ -53,8 +72,17 @@ export class RolesService {
       t = localStorage.getItem('token') ?? undefined;
     }
     const headers: Record<string, string> = t ? { Authorization: `Bearer ${t}` } : {};
-  try { console.log('[RolesService] removeUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles/remove`, roleIds, token: !!t }); } catch {}
-    return this.http.request('DELETE', `${this.base}/RoleAssigne/${userId}/roles/remove`, { body: { roleIds }, headers });
+    try { console.log('[RolesService] removeUserRoles', { url: `${this.base}/RoleAssigne/${userId}/roles/remove`, roleIds, token: !!t }); } catch {}
+    return this.http.request('DELETE', `${this.base}/RoleAssigne/${userId}/roles/remove`, { body: { roleIds }, headers }).pipe(
+      tap(() => {
+        try {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app:roles-updated', { detail: { userId, roleIds } }));
+            localStorage.setItem('rolesUpdatedAt', Date.now().toString());
+          }
+        } catch (e) {}
+      })
+    );
   }
 }
 

@@ -1,9 +1,8 @@
 <div class="login-container">
   <h2>Iniciar sesión</h2>
 
-  <div *ngIf="backendDown" class="alert alert-danger">No se pudo conectar con el servidor. <button class="btn btn-sm btn-outline-light ms-2" (click)="checkBackend()">Reintentar</button></div>
-
-  <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+  <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
+    <!-- CORREO -->
     <div class="form-group">
       <label for="correo">Correo electrónico</label>
       <input
@@ -13,9 +12,21 @@
         [(ngModel)]="loginData.correo"
         class="form-control"
         required
+        minlength="10"
+        maxlength="25"
+        #correo="ngModel"
       />
+
+      <!-- Mensajes de error -->
+      <div *ngIf="correo.invalid && (correo.dirty || correo.touched)" class="error-message">
+        <div *ngIf="correo.errors?.['required']">El correo es obligatorio.</div>
+        <div *ngIf="correo.errors?.['minlength']">Debe tener al menos 5 caracteres.</div>
+        <div *ngIf="correo.errors?.['maxlength']">No puede superar los 50 caracteres.</div>
+        <div *ngIf="correo.errors?.['email']">Debe tener un formato válido (usuario@dominio.com).</div>
+      </div>
     </div>
 
+    <!-- CONTRASEÑA -->
     <div class="form-group">
       <label for="password">Contraseña</label>
       <input
@@ -25,13 +36,25 @@
         [(ngModel)]="loginData.password"
         class="form-control"
         required
+        minlength="4"
+        maxlength="20"
+        #password="ngModel"
       />
+
+      <!-- Mensajes de error -->
+      <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error-message">
+        <div *ngIf="password.errors?.['required']">La contraseña es obligatoria.</div>
+        <div *ngIf="password.errors?.['minlength']">Debe tener al menos 4 caracteres.</div>
+        <div *ngIf="password.errors?.['maxlength']">No puede superar los 20 caracteres.</div>
+      </div>
     </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || loading || backendDown">
+    <!-- BOTÓN -->
+    <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || loading">
       {{ loading ? 'Ingresando...' : 'Iniciar sesión' }}
     </button>
 
+    <!-- Error general (backend) -->
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>

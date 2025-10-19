@@ -12,7 +12,7 @@ export interface RegistroReq {
 
 export interface LoginReq {
   correo: string;
-  clave: string;
+  password: string;
 }
 
 interface LoginResponse {

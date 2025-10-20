@@ -5,7 +5,8 @@ import { Register } from './register/register';
 import { Profile } from './profile/profile';
 import { AuthGuard } from './services/auth.guard';
 import { PanelAdmin } from './panel-admin/panel-admin';
-
+import { PasswordRecovery } from './password-recovery/password-recovery';
+import { ResetPassword } from './reset-password/reset-password';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -14,4 +15,6 @@ export const routes: Routes = [
   { path: 'register', component: Register },
   { path: 'profile', component: Profile, canActivate: [AuthGuard] },
   { path: 'panel-admin', component: PanelAdmin, canActivate: [AuthGuard] },
+  { path: 'password-recovery', component: PasswordRecovery },
+  { path: 'reset-password', component: ResetPassword },
 ];

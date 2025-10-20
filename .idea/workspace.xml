@@ -5,45 +5,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a40a9ac1-2240-478b-93a4-13560ee16ff7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/LautaroDieselEcommerceApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/config/SecurityConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/controller/ProductoController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/controller/usuario/UsuarioController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/dto/ProductoDto.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/dto/usuario/BaseResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/dto/usuario/UsuarioCreateDto.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/dto/usuario/UsuarioDto.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/dto/usuario/UsuarioUpdateDto.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/entity/ProductoEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/entity/usuario/RolEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/entity/usuario/UsuarioEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/repository/ProductoRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/repository/usuario/RolRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/repository/usuario/UsuarioRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/service/UsuarioService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/LautaroDieselEcommerce/service/impl/UsuarioServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/example/LautaroDieselEcommerce/LautaroDieselEcommerceApplicationTests.java" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/controller/recuperar_clave/PasswordRecoveryController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/recuperar_clave/PasswordRecoveryRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/recuperar_clave/ResetPasswordRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/recuperar_clave/RecuperacionClaveEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/repository/recuperar_clave/RecuperacionClaveRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/PasswordRecoveryService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/PasswordRecoveryServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="33Vsg6sewLVegDGunnaByY8SmFI" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -51,10 +44,20 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.LautaroDieselEcommerceApplication.executor": "Run",
+    "git-widget-placeholder": "Recuperacion-Contraseña",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/tbrep/OneDrive/Escritorio/Programacion/Facu/Tesis/LAUTARO-DIESEL-ECOMMERCE/BACKEND",
+    "last_opened_file_path": "C:/Users/tbrep/OneDrive/Escritorio/Programacion/Facu/Tesis/LAUTARO-DIESEL-ECOMMERCE",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
@@ -69,6 +72,13 @@
     <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
       <module name="LAUTARO-DIESEL-ECOMMERCE" />
       <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LautaroDieselEcommerceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="LautaroDieselEcommerce" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.LautaroDieselEcommerce.LautaroDieselEcommerceApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -91,6 +101,7 @@
       <option name="presentableId" value="Default" />
       <updated>1759413684929</updated>
       <workItem from="1759413689169" duration="61000" />
+      <workItem from="1760973112290" duration="6984000" />
     </task>
     <servers />
   </component>

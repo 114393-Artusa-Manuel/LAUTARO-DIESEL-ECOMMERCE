@@ -122,7 +122,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
             mailSender.send(mail);
             System.out.println("Correo de recuperación enviado a: " + destinatario);
         } catch (Exception e) {
-            System.err.println("⚠️ Error al enviar correo de recuperación: " + e.getMessage());
+            System.err.println(" Error al enviar correo de recuperación: " + e.getMessage());
             // No rompas la ejecución — el backend continúa normalmente
         }
     }

@@ -12,18 +12,7 @@
         [(ngModel)]="loginData.correo"
         class="form-control"
         required
-        minlength="5"
-        maxlength="50"
-        #correo="ngModel"
       />
-
-      <!-- Mensajes de error -->
-      <div *ngIf="correo.invalid && (correo.dirty || correo.touched)" class="error-message">
-        <div *ngIf="correo.errors?.['required']">El correo es obligatorio.</div>
-        <div *ngIf="correo.errors?.['minlength']">Debe tener al menos 5 caracteres.</div>
-        <div *ngIf="correo.errors?.['maxlength']">No puede superar los 50 caracteres.</div>
-        <div *ngIf="correo.errors?.['email']">Debe tener un formato válido (usuario@dominio.com).</div>
-      </div>
     </div>
 
     <!-- CONTRASEÑA -->

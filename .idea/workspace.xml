@@ -5,16 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a40a9ac1-2240-478b-93a4-13560ee16ff7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/controller/recuperar_clave/PasswordRecoveryController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/recuperar_clave/PasswordRecoveryRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/recuperar_clave/ResetPasswordRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/recuperar_clave/RecuperacionClaveEntity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/repository/recuperar_clave/RecuperacionClaveRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/PasswordRecoveryService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/PasswordRecoveryServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/GmailServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/resources/credentials.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/PasswordRecoveryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/PasswordRecoveryServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BACKEND/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,6 +57,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -101,7 +100,10 @@
       <option name="presentableId" value="Default" />
       <updated>1759413684929</updated>
       <workItem from="1759413689169" duration="61000" />
-      <workItem from="1760973112290" duration="6984000" />
+      <workItem from="1760973112290" duration="8048000" />
+      <workItem from="1761062964492" duration="943000" />
+      <workItem from="1761063927877" duration="1623000" />
+      <workItem from="1761676446347" duration="3431000" />
     </task>
     <servers />
   </component>

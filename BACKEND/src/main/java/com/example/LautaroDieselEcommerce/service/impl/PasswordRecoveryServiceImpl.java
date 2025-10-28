@@ -8,14 +8,12 @@ import com.example.LautaroDieselEcommerce.entity.usuario.UsuarioEntity;
 import com.example.LautaroDieselEcommerce.repository.recuperar_clave.RecuperacionClaveRepository;
 import com.example.LautaroDieselEcommerce.repository.usuario.UsuarioRepository;
 import com.example.LautaroDieselEcommerce.service.PasswordRecoveryService;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -34,64 +32,50 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JavaMailSender mailSender;
-
     @Value("${app.password-reset.expiration-minutes:60}")
     private long expirationMinutes;
 
-    @Value("${spring.mail.username}")
-    private String senderEmail;
-
-    public PasswordRecoveryServiceImpl(UsuarioRepository usuarioRepository,
-                                       RecuperacionClaveRepository recuperacionClaveRepository,
-                                       PasswordEncoder passwordEncoder,
-                                       JavaMailSender mailSender) {
-        this.usuarioRepository = usuarioRepository;
-        this.recuperacionClaveRepository = recuperacionClaveRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.mailSender = mailSender;
-    }
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
 
     @Override
     @Transactional
     public BaseResponse<String> solicitarRecuperacion(PasswordRecoveryRequest request, String appBaseUrl) {
         Optional<UsuarioEntity> opt = usuarioRepository.findByCorreo(request.getCorreo());
 
+        // No revelar si el correo existe o no
         if (opt.isEmpty()) {
-            // No revelar si el correo existe o no por seguridad
             return new BaseResponse<>("Si el correo existe, se enviará un enlace de recuperación", 200, null);
         }
 
         UsuarioEntity usuario = opt.get();
 
-        // Eliminar solicitudes anteriores del mismo usuario
+        // Eliminar solicitudes anteriores de recuperación
         recuperacionClaveRepository.deleteByUsuario(usuario);
 
-        // Generar token y fecha de expiración
+        // Crear nueva solicitud
         String token = UUID.randomUUID().toString();
         LocalDateTime expira = LocalDateTime.now().plusMinutes(expirationMinutes);
 
-        // Crear la nueva solicitud
         RecuperacionClaveEntity rc = new RecuperacionClaveEntity();
         rc.setUsuario(usuario);
         rc.setToken(token);
-        rc.setExpiraEn(LocalDateTime.now().plusMinutes(15));
+        rc.setExpiraEn(expira);
         rc.setFechaCreacion(LocalDateTime.now());
         rc.setUsado(false);
-
         recuperacionClaveRepository.save(rc);
 
-        // Construir URL de reseteo
+        // Construir enlace de recuperación
         String resetUrl = appBaseUrl + "/reset-password?token=" + token;
 
-        // Enviar el correo
+        // Enviar correo con Gmail API
         enviarCorreoRecuperacion(usuario.getCorreo(), resetUrl);
 
         return new BaseResponse<>("Si el correo existe, se enviará un enlace de recuperación", 200, null);
     }
 
     @Override
+    @Transactional
     public BaseResponse<String> resetearPassword(ResetPasswordRequest request) {
         RecuperacionClaveEntity rc = recuperacionClaveRepository
                 .findByTokenAndUsadoFalseAndExpiraEnAfter(request.getToken(), LocalDateTime.now())
@@ -108,23 +92,22 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
         return new BaseResponse<>("Contraseña actualizada correctamente", 200, null);
     }
-
+     // Envía el correo de recuperación utilizando la API de Gmail (OAuth2)
     private void enviarCorreoRecuperacion(String destinatario, String enlace) {
         try {
-            SimpleMailMessage mail = new SimpleMailMessage();
-            mail.setFrom(senderEmail);
-            mail.setTo(destinatario);
-            mail.setSubject("Recuperación de contraseña - Lautaro Diesel Ecommerce");
-            mail.setText("Hola!\n\nPara restablecer tu contraseña hacé clic en el siguiente enlace:\n\n"
+            GmailServiceImpl gmailService = new GmailServiceImpl();
+            String asunto = "Recuperación de contraseña - Lautaro Diesel Ecommerce";
+            String cuerpo = "Hola!\n\nPara restablecer tu contraseña hacé clic en el siguiente enlace:\n\n"
                     + enlace + "\n\nEste enlace expira en " + expirationMinutes + " minutos.\n\n"
-                    + "Si no solicitaste un cambio de contraseña, ignorá este correo.");
+                    + "Si no solicitaste un cambio de contraseña, ignorá este correo.";
 
-            mailSender.send(mail);
-            System.out.println("Correo de recuperación enviado a: " + destinatario);
+            gmailService.sendEmail(destinatario, asunto, cuerpo);
+            System.out.println("Correo enviado correctamente a " + destinatario);
+
         } catch (Exception e) {
-            System.err.println(" Error al enviar correo de recuperación: " + e.getMessage());
-            // No rompas la ejecución — el backend continúa normalmente
+            System.err.println("Error al enviar el correo: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No se pudo enviar el correo de recuperación");
         }
     }
-
 }

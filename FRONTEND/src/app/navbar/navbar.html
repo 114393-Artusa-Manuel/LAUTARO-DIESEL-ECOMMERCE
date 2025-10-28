@@ -19,6 +19,9 @@
       <li class="nav-item" *ngIf="isAdmin()">
         <a class="nav-link" routerLink="/panel-admin" routerLinkActive="active">Panel</a>
       </li>
+      <li class="nav-item" *ngIf="isAdmin()">
+        <a class="nav-link" routerLink="/admin/productos" routerLinkActive="active">Productos (Admin)</a>
+      </li>
       <li class="nav-item" *ngIf="isAuthenticated()">
         <!-- Use an anchor for consistent nav-link styling and visibility; prevent default navigation -->
         <a class="nav-link" href="#" role="button" (click)="openLogoutConfirm(); $event.preventDefault()">Cerrar sesión</a>

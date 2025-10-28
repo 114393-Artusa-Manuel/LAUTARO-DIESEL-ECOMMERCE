@@ -1,0 +1,111 @@
+<div class="container py-4">
+	<h4>Crear producto</h4>
+
+	<div *ngIf="message" class="alert alert-info">{{ message }}</div>
+
+	<!-- Products list -->
+	<div class="mb-4">
+		<h5 class="d-flex align-items-center justify-content-between">
+			<span>Productos</span>
+			<button class="btn btn-sm btn-primary" type="button" (click)="toggleCreate()">{{ showCreate ? 'Cerrar formulario' : 'Nuevo producto' }}</button>
+		</h5>
+		<table class="table table-sm table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Nombre</th>
+					<th>Slug</th>
+					<th>Activo</th>
+					<th>Marcas</th>
+					<th>Categorías</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let p of products">
+					<td>{{ p.idProducto ?? p.id }}</td>
+					<td>{{ p.nombre }}</td>
+					<td>{{ p.slug }}</td>
+					<td>{{ p.activo ? 'Sí' : 'No' }}</td>
+					<td>{{ (p.marcasIds || p.marcas || []).length }}</td>
+					<td>{{ (p.categoriasIds || p.categorias || []).length }}</td>
+					<td>
+						<button class="btn btn-sm btn-outline-primary me-2" type="button" (click)="edit(p)">Editar</button>
+						<button class="btn btn-sm btn-outline-danger" type="button" (click)="delete(p)">Eliminar</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Inline edit panel -->
+	<div *ngIf="editModel" class="card mb-4 p-3 bg-light">
+		<h6>Editar producto {{ editModel.idProducto ?? editModel.id }}</h6>
+		<div class="mb-2">
+			<label class="form-label">Nombre</label>
+			<input class="form-control" [(ngModel)]="editModel.nombre" name="editNombre" />
+		</div>
+		<div class="mb-2">
+			<label class="form-label">Slug</label>
+			<input class="form-control" [(ngModel)]="editModel.slug" name="editSlug" />
+		</div>
+		<div class="mb-2">
+			<label class="form-label">Descripción</label>
+			<textarea class="form-control" [(ngModel)]="editModel.descripcion" name="editDescripcion"></textarea>
+		</div>
+		<div class="mb-2 form-check">
+			<input class="form-check-input" type="checkbox" [(ngModel)]="editModel.activo" name="editActivo" id="editActivo" />
+			<label class="form-check-label" for="editActivo">Activo</label>
+		</div>
+		<div class="mb-2">
+			<label class="form-label">IDs de marcas (coma-separados)</label>
+			<input class="form-control" [(ngModel)]="editModel.marcasIds" name="editMarcasIds" />
+		</div>
+		<div class="mb-2">
+			<label class="form-label">IDs de categorías (coma-separados)</label>
+			<input class="form-control" [(ngModel)]="editModel.categoriasIds" name="editCategoriasIds" />
+		</div>
+		<div class="text-end">
+			<button class="btn btn-secondary me-2" (click)="cancelEdit()">Cancelar</button>
+			<button class="btn btn-success" (click)="saveEdit()">Guardar</button>
+		</div>
+	</div>
+
+	<div *ngIf="showCreate">
+	<form (ngSubmit)="create()">
+		<div class="mb-3">
+			<label class="form-label">Nombre</label>
+			<input class="form-control" [(ngModel)]="model.nombre" name="nombre" required />
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">Slug (único)</label>
+			<input class="form-control" [(ngModel)]="model.slug" name="slug" required />
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">Descripción</label>
+			<textarea class="form-control" [(ngModel)]="model.descripcion" name="descripcion"></textarea>
+		</div>
+
+		<div class="mb-3 form-check">
+			<input class="form-check-input" type="checkbox" [(ngModel)]="model.activo" name="activo" id="activo" />
+			<label class="form-check-label" for="activo">Activo</label>
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">IDs de marcas (coma-separados)</label>
+			<input class="form-control" [(ngModel)]="model.marcasIds" name="marcasIds" placeholder="1,2,3" />
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">IDs de categorías (coma-separados)</label>
+			<input class="form-control" [(ngModel)]="model.categoriasIds" name="categoriasIds" placeholder="1,2" />
+		</div>
+
+		<button class="btn btn-primary" type="submit" [disabled]="loading">Crear</button>
+		<button class="btn btn-secondary ms-2" type="button" (click)="createMinimal()" [disabled]="loading">Probar sin asociaciones</button>
+		<button class="btn btn-outline-secondary ms-2" type="button" (click)="toggleCreate()">Cancelar</button>
+	</form>
+	</div>
+</div>

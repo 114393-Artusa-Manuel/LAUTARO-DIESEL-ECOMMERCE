@@ -6,7 +6,7 @@ import com.example.LautaroDieselEcommerce.service.ProductoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/productos")
 @RequiredArgsConstructor

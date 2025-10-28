@@ -92,22 +92,27 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
         return new BaseResponse<>("Contraseña actualizada correctamente", 200, null);
     }
-     // Envía el correo de recuperación utilizando la API de Gmail (OAuth2)
+
+    // Envía el correo de recuperación utilizando la API de Gmail (OAuth2)
     private void enviarCorreoRecuperacion(String destinatario, String enlace) {
         try {
             GmailServiceImpl gmailService = new GmailServiceImpl();
             String asunto = "Recuperación de contraseña - Lautaro Diesel Ecommerce";
-            String cuerpo = "Hola!\n\nPara restablecer tu contraseña hacé clic en el siguiente enlace:\n\n"
-                    + enlace + "\n\nEste enlace expira en " + expirationMinutes + " minutos.\n\n"
-                    + "Si no solicitaste un cambio de contraseña, ignorá este correo.";
+
+            // 💡 Cuerpo simple en HTML
+            String cuerpo = "<p>Hola,</p>"
+                    + "<p>Hacé clic <a href='" + enlace + "'>acá</a> para restablecer tu contraseña.</p>"
+                    + "<p>Este enlace expira en " + expirationMinutes + " minutos.</p>"
+                    + "<p>Si no solicitaste un cambio de contraseña, ignorá este correo.</p>";
 
             gmailService.sendEmail(destinatario, asunto, cuerpo);
-            System.out.println("Correo enviado correctamente a " + destinatario);
+            System.out.println("📧 Correo enviado correctamente a " + destinatario);
 
         } catch (Exception e) {
-            System.err.println("Error al enviar el correo: " + e.getMessage());
+            System.err.println("❌ Error al enviar el correo: " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "No se pudo enviar el correo de recuperación");
         }
     }
+
 }

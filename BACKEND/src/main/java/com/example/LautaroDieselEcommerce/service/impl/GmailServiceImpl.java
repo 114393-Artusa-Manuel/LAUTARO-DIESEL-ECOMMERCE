@@ -59,16 +59,17 @@ public class GmailServiceImpl {
                 .build();
     }
 
-    public void sendEmail(String to, String subject, String bodyText) throws Exception {
+    public void sendEmail(String to, String subject, String bodyHtml) throws Exception {
         Gmail service = getService();
-        MimeMessage email = createEmail(to, "me", subject, bodyText);
-        Message message = createMessageWithEmail(email);
+
+        MimeMessage email = createEmail(to, "me", subject, bodyHtml);
+        com.google.api.services.gmail.model.Message message = createMessageWithEmail(email);
 
         service.users().messages().send("me", message).execute();
-        System.out.println("✅ Correo enviado correctamente a: " + to);
+        System.out.println("📧 Correo HTML enviado correctamente a: " + to);
     }
 
-    private MimeMessage createEmail(String to, String from, String subject, String bodyText)
+    private MimeMessage createEmail(String to, String from, String subject, String htmlContent)
             throws MessagingException {
         Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
@@ -77,9 +78,10 @@ public class GmailServiceImpl {
         email.setFrom(new InternetAddress(from));
         email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
         email.setSubject(subject);
-        email.setText(bodyText);
+        email.setContent(htmlContent, "text/html; charset=utf-8");
         return email;
     }
+
 
     private Message createMessageWithEmail(MimeMessage email)
             throws IOException, MessagingException {

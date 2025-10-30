@@ -33,18 +33,3 @@ input.ng-invalid.ng-touched {
   border-color: #d9534f;
 }
 
-a {
-  display: block;
-  text-align: center;
-  margin-top: 15px;
-  color: #0d6efd !important;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-
-

@@ -42,13 +42,6 @@
     <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || loading">
       {{ loading ? 'Ingresando...' : 'Iniciar sesión' }}
     </button>
-    
-    <!-- 👇 Enlace a recuperación -->
-<div class="text-center mt-3">
-  <a routerLink="/password-recovery" class="text-primary" style="text-decoration: none;">
-    ¿Olvidaste tu contraseña?
-  </a>
-</div>
 
     <!-- Error general (backend) -->
     <div *ngIf="errorMessage" class="error-message">

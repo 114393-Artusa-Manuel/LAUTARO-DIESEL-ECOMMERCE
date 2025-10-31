@@ -10,26 +10,25 @@
   <div class="row mb-3">
     <div class="col-md-3 mb-2">
       <input class="form-control" placeholder="Buscar por nombre o email"
-             [(ngModel)]="search"
-             (ngModelChange)="onFilterChange()" />
+             [ngModel]="search"
+             (input)="search = $any($event.target).value; onFilterChange()" />
     </div>
 
     <div class="col-md-2 mb-2">
-      <!-- Desplegable de roles (selección por nombre) -->
       <select class="form-select" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
-        <option value="">Todos los roles</option>
-        @for (r of availableRoles; track r.id) {
-          <option [value]="r.nombre">{{ r.nombre }}</option>
-        }
+        <option [ngValue]="null">Todos los roles</option>
+        <option [ngValue]="'cliente'">Cliente</option>
+        <option [ngValue]="'moderador'">Moderador</option>
+        <option [ngValue]="'administrador'">Administrador</option>
       </select>
     </div>
 
     <div class="col-md-2 mb-2">
-      <input type="date" class="form-control" [(ngModel)]="fromDate" (ngModelChange)="onFilterChange()" />
+      <input type="date" class="form-control" [(ngModel)]="fromDate" (change)="onFilterChange()" />
     </div>
 
     <div class="col-md-2 mb-2">
-      <input type="date" class="form-control" [(ngModel)]="toDate" (ngModelChange)="onFilterChange()" />
+      <input type="date" class="form-control" [(ngModel)]="toDate" (change)="onFilterChange()" />
     </div>
 
     <div class="col-md-3 mb-2 text-end">
@@ -71,7 +70,7 @@
               <tr>
                 <td>{{ u.nombre || u.nombreCompleto || u.name }}</td>
                 <td>{{ u.email || u.correo }}</td>
-                <td>{{ getRoleNames(u) }}</td>
+                <td>{{ (u.roles || u.rol || u.role) | json }}</td>
                 <td>{{ (u.fechaCreacion || u.createdAt || u.created) | date:'short' }}</td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-outline-primary" (click)="openAssign(u)">Editar roles</button>

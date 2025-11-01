@@ -76,6 +76,12 @@ export class PanelAdmin implements OnDestroy {
       next: (res: any) => { this.availableRoles = Array.isArray(res) ? res : (res?.data ?? res ?? []); },
       error: () => { this.availableRoles = []; },
     });
+
+    // sync: reload when roles change elsewhere
+    if (typeof window !== 'undefined') {
+      window.addEventListener('app:roles-updated', () => this.loadUsuarios());
+      window.addEventListener('storage', (ev: StorageEvent) => { if (ev.key === 'rolesUpdatedAt') this.loadUsuarios(); });
+    }
   }
 
   ngOnDestroy(): void {
@@ -99,6 +105,8 @@ export class PanelAdmin implements OnDestroy {
       .subscribe({
         next: (res: any) => {
           this.usuarios = Array.isArray(res) ? res : (res?.data ?? res ?? []);
+          // normalize/resolve roles for display
+          this.resolveUserRoles();
           this.applyClientFilters();
           this.loading = false;
         },
@@ -111,26 +119,96 @@ export class PanelAdmin implements OnDestroy {
 
   // filtro cliente
   private applyClientFilters() {
-    const q = (this.search || '').trim().toLowerCase();
+    const q = (this.search || '').trim();
     const rf = this.roleFilter;
+    // parse dates and make inclusive range: from 00:00:00 to 23:59:59.999
     const fd = this.fromDate ? new Date(this.fromDate) : null;
     const td = this.toDate ? new Date(this.toDate) : null;
+    if (fd) fd.setHours(0, 0, 0, 0);
+    if (td) td.setHours(23, 59, 59, 999);
 
-    const getDate = (u: any) =>
-      new Date(u.fechaCreacion ?? u.createdAt ?? u.created ?? 0);
+    const getDate = (u: any) => new Date(u.fechaCreacion ?? u.createdAt ?? u.created ?? 0);
 
-    const hasRole = (u: any) => {
-      if (rf == null || rf === '') return true;
-      const r = u.roles ?? u.rol ?? u.role;
-      const txt = JSON.stringify(r ?? '').toLowerCase();
-      return txt.includes(String(rf).toLowerCase());
+    const normalize = (s: any) => {
+      if (!s && s !== 0) return '';
+      try {
+        return String(s).toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[\u0300-\u036f]/g, '');
+      } catch (e) {
+        return String(s).toLowerCase();
+      }
+    };
+
+    const getRolesInfo = (u: any) => {
+      const r = u.roles ?? u.rol ?? u.role ?? [];
+      const arr = Array.isArray(r) ? r : [r];
+      const names: string[] = [];
+      const ids: number[] = [];
+      for (const it of arr) {
+        if (it == null) continue;
+        if (typeof it === 'string' || typeof it === 'number') {
+          const s = String(it);
+          names.push(normalize(s));
+          // extract numeric tokens from string (handles cases like 'RolEntity(...id=3)')
+          const n = Number(it);
+          if (!isNaN(n)) ids.push(n);
+          const found = s.match(/\b(\d+)\b/g);
+          if (found) for (const f of found) {
+            const vf = Number(f);
+            if (!isNaN(vf)) ids.push(vf);
+          }
+        } else if (typeof it === 'object') {
+          const name = it.nombre ?? it.name ?? it.role ?? JSON.stringify(it);
+          names.push(normalize(name));
+          const id = Number(it.id ?? it.roleId ?? it.idRol ?? NaN);
+          if (!isNaN(id)) ids.push(id);
+          // also scan object values for numeric ids
+          try {
+            const json = JSON.stringify(it);
+            const found = json.match(/\b(\d+)\b/g);
+            if (found) for (const f of found) {
+              const vf = Number(f);
+              if (!isNaN(vf)) ids.push(vf);
+            }
+          } catch {}
+        }
+      }
+      return { names, ids };
     };
 
     const textMatch = (u: any) => {
       if (!q) return true;
-      const name = (u.nombre ?? u.nombreCompleto ?? u.name ?? '').toLowerCase();
-      const mail = (u.email ?? u.correo ?? '').toLowerCase();
-      return name.includes(q) || mail.includes(q);
+      const name = normalize(u.nombre ?? u.nombreCompleto ?? u.name ?? '');
+      const mail = normalize(u.email ?? u.correo ?? '');
+      const qn = normalize(q);
+      return name.includes(qn) || mail.includes(qn);
+    };
+
+    const hasRole = (u: any) => {
+      if (rf == null || rf === '') return true;
+      const { names, ids } = getRolesInfo(u);
+
+      // if rf is numeric (or a numeric string) prefer id match
+      const maybeNum = String(rf).trim();
+      if (maybeNum !== '' && !isNaN(Number(maybeNum))) {
+        const n = Number(maybeNum);
+        if (!isNaN(n)) return ids.includes(n) || names.some(nm => nm.includes(String(n)));
+      }
+
+      // otherwise treat rf as part of role name (case- and diacritics-insensitive)
+      const needle = normalize(String(rf));
+
+      // match against resolved role names first
+      if (Array.isArray(u._roleNames) && u._roleNames.length) {
+        return u._roleNames.map((x:any) => normalize(x)).some((rn: string) => rn.includes(needle));
+      }
+
+      // fallback to names/ids extracted from the user object
+      if (names.some(nm => nm.includes(needle))) return true;
+      // also match against availableRoles catalog names (in case user has only ids)
+      const catalogNameMatch = this.availableRoles.some(r => normalize(r.nombre).includes(needle) && ids.includes(r.id));
+      if (catalogNameMatch) return true;
+
+      return ids.some(id => String(id).includes(needle));
     };
 
     const inRange = (u: any) => {
@@ -154,6 +232,41 @@ export class PanelAdmin implements OnDestroy {
   onFilterChange() {
     this.applyClientFilters();
     this.filter$.next();
+  }
+
+  // After loading users, attempt to resolve role names for each user using the availableRoles catalog
+  private resolveUserRoles() {
+    const catalog = new Map<number, string>();
+    for (const r of this.availableRoles) catalog.set(r.id, r.nombre);
+
+    for (const u of this.usuarios) {
+      const r = u.roles ?? u.rol ?? u.role ?? [];
+      const arr = Array.isArray(r) ? r : [r];
+      const names: string[] = [];
+      for (const it of arr) {
+        if (it == null) continue;
+        if (typeof it === 'number' || typeof it === 'string') {
+          const id = Number(it);
+          if (!isNaN(id) && catalog.has(id)) names.push(catalog.get(id) as string);
+          else names.push(String(it));
+        } else if (typeof it === 'object') {
+          if (it.nombre) names.push(it.nombre);
+          else if (it.name) names.push(it.name);
+          else if (it.id && catalog.has(Number(it.id))) names.push(catalog.get(Number(it.id)) as string);
+          else names.push(JSON.stringify(it));
+        }
+      }
+      u._roleNames = Array.from(new Set(names));
+    }
+  }
+
+  // Get display string for user's roles
+  getRoleNames(u: any) {
+    if (!u) return '';
+    if (Array.isArray(u._roleNames) && u._roleNames.length) return u._roleNames.join(', ');
+    const r = u.roles ?? u.rol ?? u.role ?? [];
+    if (Array.isArray(r)) return r.map((x:any) => (x?.nombre ?? x?.name ?? String(x))).join(', ');
+    return String(r);
   }
 
   // modal roles

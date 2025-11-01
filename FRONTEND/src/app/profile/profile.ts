@@ -39,6 +39,22 @@ export class Profile {
     this.router.navigateByUrl('/login');
   }
 
+  // modal state for logout confirmation in profile
+  showLogoutConfirm = false;
+
+  openLogoutConfirm() {
+    this.showLogoutConfirm = true;
+  }
+
+  cancelLogout() {
+    this.showLogoutConfirm = false;
+  }
+
+  confirmLogout() {
+    this.showLogoutConfirm = false;
+    this.logout();
+  }
+
   private deriveRoleName(usuario: any): string {
     if (!usuario) return '—';
 

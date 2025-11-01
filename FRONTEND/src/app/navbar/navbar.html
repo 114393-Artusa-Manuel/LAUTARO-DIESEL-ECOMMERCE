@@ -23,8 +23,39 @@
         <a class="nav-link" routerLink="/admin/productos" routerLinkActive="active">Productos (Admin)</a>
       </li>
       <li class="nav-item" *ngIf="isAuthenticated()">
-        <a class="nav-link" (click)="logout()">Cerrar sesión</a>
+        <!-- Use an anchor for consistent nav-link styling and visibility; prevent default navigation -->
+        <a class="nav-link" href="#" role="button" (click)="openLogoutConfirm(); $event.preventDefault()">Cerrar sesión</a>
       </li>
     </ul>
   </div>
 </nav>
+
+<!-- Logout confirmation modal -->
+@if (showLogoutConfirm) {
+  <div class="navbar-modal-backdrop" (click)="cancelLogout()">
+    <div class="navbar-modal-dialog" role="dialog" (click)="$event.stopPropagation()">
+      <div class="navbar-modal-content p-3">
+        <h5 class="mb-2">¿Estás seguro que quieres cerrar sesión?</h5>
+        <p class="small text-muted">Se cerrará tu sesión actual y volverás a la pantalla de inicio de sesión.</p>
+        <div class="text-end">
+          <button class="btn btn-outline-secondary me-2" (click)="cancelLogout()">Cancelar</button>
+          <button class="btn btn-danger" (click)="confirmLogout()">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<style>
+  .navbar-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6) !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:2050 !important;
+  }
+  .navbar-modal-dialog { max-width:420px; width:100%; padding: 12px; }
+  .navbar-modal-content { background: #fff; border-radius: .375rem; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+</style>

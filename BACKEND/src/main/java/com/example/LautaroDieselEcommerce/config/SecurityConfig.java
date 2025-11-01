@@ -25,7 +25,8 @@ public class SecurityConfig {
         // Habilitamos CORS y autorización: por defecto permite (para no bloquear endpoints al principio)
         .cors(cors -> {})
         .authorizeHttpRequests(auth -> auth
-            .anyRequest().permitAll()
+                .requestMatchers("/auth/recover", "/auth/reset-password").permitAll()
+                .anyRequest().permitAll()
         )
         // Deshabilitamos CSRF si solo usás API REST
         .csrf(csrf -> csrf.disable());

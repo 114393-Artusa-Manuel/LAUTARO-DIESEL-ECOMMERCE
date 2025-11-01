@@ -28,6 +28,9 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+# Google OAuth
+src/main/resources/credentials.json
+tokens/
 
 ### VS Code ###
 .vscode/

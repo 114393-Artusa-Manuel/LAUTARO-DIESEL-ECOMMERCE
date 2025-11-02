@@ -29,7 +29,10 @@ export class ProductosAdmin implements OnInit {
     descripcion: '',
     activo: true,
     marcasIds: '', // comma-separated in form
-    categoriasIds: '' // comma-separated in form
+    categoriasIds: '', // comma-separated in form
+    precio: null,
+    moneda: 'ARS',
+    varianteActiva: true
   };
 
   loading = false;
@@ -56,6 +59,9 @@ export class ProductosAdmin implements OnInit {
       activo: !!this.model.activo,
       marcasIds: normMarcas.ids,
       categoriasIds: normCategorias.ids
+      ,precio: this.model.precio != null ? Number(this.model.precio) : null
+      ,moneda: this.model.moneda ? this.model.moneda.toString().trim() : null
+      ,varianteActiva: this.model.varianteActiva != null ? !!this.model.varianteActiva : null
     };
     this.loading = true;
     this.productoService.create(payload).subscribe({
@@ -64,8 +70,8 @@ export class ProductosAdmin implements OnInit {
         this.message = res?.mensaje ?? 'Producto creado';
         // reset form
         this.model = { nombre: '', slug: '', descripcion: '', activo: true, marcasIds: '', categoriasIds: '' };
-        this.loadProducts();
-        this.showCreate = false;
+        // reload full page so the UI reflects the latest state
+        if (typeof window !== 'undefined') window.location.reload();
       },
       error: (err: any) => {
         this.loading = false;
@@ -103,8 +109,7 @@ export class ProductosAdmin implements OnInit {
       next: (res: any) => {
         this.loading = false;
         this.message = res?.mensaje ?? 'Producto (minimal) creado';
-        this.loadProducts();
-        this.showCreate = false;
+        if (typeof window !== 'undefined') window.location.reload();
       },
       error: (err: any) => {
         this.loading = false;
@@ -241,7 +246,10 @@ export class ProductosAdmin implements OnInit {
       descripcion: (this.editModel.descripcion || '').toString().trim(),
       activo: !!this.editModel.activo,
       marcasIds: this.normalizeIdsField(this.editModel.marcasIds).ids,
-      categoriasIds: this.normalizeIdsField(this.editModel.categoriasIds).ids
+      categoriasIds: this.normalizeIdsField(this.editModel.categoriasIds).ids,
+      precio: this.editModel.precio != null ? Number(this.editModel.precio) : null,
+      moneda: this.editModel.moneda ? this.editModel.moneda.toString().trim() : null,
+      varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null
     };
     this.loading = true;
     this.productoService.update(id, payload).subscribe({
@@ -249,7 +257,7 @@ export class ProductosAdmin implements OnInit {
         this.loading = false;
         this.message = res?.mensaje ?? 'Producto actualizado';
         this.editModel = null;
-        this.loadProducts();
+        if (typeof window !== 'undefined') window.location.reload();
       },
       error: (err: any) => {
         this.loading = false;
@@ -268,7 +276,7 @@ export class ProductosAdmin implements OnInit {
       next: (res: any) => {
         this.loading = false;
         this.message = res?.mensaje ?? 'Producto eliminado';
-        this.loadProducts();
+        if (typeof window !== 'undefined') window.location.reload();
       },
       error: (err: any) => {
         this.loading = false;

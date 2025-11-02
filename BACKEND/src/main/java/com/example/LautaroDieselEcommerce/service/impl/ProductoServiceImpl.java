@@ -5,14 +5,16 @@ import com.example.LautaroDieselEcommerce.dto.usuario.BaseResponse;
 import com.example.LautaroDieselEcommerce.entity.producto.CategoriaEntity;
 import com.example.LautaroDieselEcommerce.entity.producto.MarcaEntity;
 import com.example.LautaroDieselEcommerce.entity.producto.ProductoEntity;
+import com.example.LautaroDieselEcommerce.entity.producto.VarianteEntity;
 import com.example.LautaroDieselEcommerce.repository.producto.ProductoRepository;
+import com.example.LautaroDieselEcommerce.repository.producto.VarianteRepository;
 import com.example.LautaroDieselEcommerce.service.ProductoService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,14 +23,100 @@ import java.util.stream.Collectors;
 public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final VarianteRepository varianteRepository;
 
     @Override
-    public BaseResponse<List<ProductoDto>> getAll() {
-        List<ProductoDto> productos = productoRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-        return new BaseResponse<>("Lista de productos obtenida correctamente", 200, productos);
+    @Transactional
+    public BaseResponse<ProductoDto> create(ProductoDto dto) {
+        if (dto.getNombre() == null || dto.getNombre().isBlank())
+            return new BaseResponse<>("Nombre requerido", 400, null);
+        if (dto.getSlug() == null || dto.getSlug().isBlank())
+            return new BaseResponse<>("Slug requerido", 400, null);
+        if (productoRepository.existsBySlug(dto.getSlug()))
+            return new BaseResponse<>("El slug ya existe", 400, null);
+
+        // Producto
+        ProductoEntity entity = toEntity(dto);
+        entity.setFechaCreacion(LocalDateTime.now());
+        entity.setFechaActualizacion(LocalDateTime.now());
+        ProductoEntity saved = productoRepository.save(entity);
+
+        // Variante por defecto
+    VarianteEntity variante = VarianteEntity.builder()
+        .producto(saved)
+        .sku(generarSkuAuto(saved))                 // OBLIGATORIO
+        .precioBase(safePrecio(dto.getPrecio()))
+        .moneda(safeMoneda(dto.getMoneda()))
+        .activo(dto.getVarianteActiva() == null ? true : dto.getVarianteActiva())
+        .build();
+
+    // Ensure non-null required fields before persisting to avoid DB constraint violations
+    if (variante.getActivo() == null) variante.setActivo(true);
+    if (variante.getMoneda() == null || variante.getMoneda().isBlank()) variante.setMoneda("ARS");
+    if (variante.getFechaCreacion() == null) variante.setFechaCreacion(LocalDateTime.now());
+    if (variante.getFechaActualizacion() == null) variante.setFechaActualizacion(LocalDateTime.now());
+
+    varianteRepository.save(variante);
+
+        return new BaseResponse<>("Producto creado correctamente", 201, toDto(saved));
+    }
+
+    @Override
+    @Transactional
+    public BaseResponse<ProductoDto> update(Long id, ProductoDto dto) {
+        return productoRepository.findById(id)
+                .map(producto -> {
+                    if (dto.getNombre() != null) producto.setNombre(dto.getNombre());
+                    if (dto.getSlug() != null)   producto.setSlug(dto.getSlug());
+                    producto.setDescripcion(dto.getDescripcion());
+                    if (dto.getActivo() != null) producto.setActivo(dto.getActivo());
+                    producto.setFechaActualizacion(LocalDateTime.now());
+
+                    if (dto.getMarcasIds() != null) {
+                        Set<MarcaEntity> marcas = dto.getMarcasIds().stream()
+                                .filter(mid -> mid != null && mid > 0)
+                                .map(mid -> MarcaEntity.builder().idMarca(mid).build())
+                                .collect(Collectors.toSet());
+                        producto.setMarcas(marcas);
+                    }
+                    if (dto.getCategoriasIds() != null) {
+                        Set<CategoriaEntity> categorias = dto.getCategoriasIds().stream()
+                                .filter(cid -> cid != null && cid > 0)
+                                .map(cid -> CategoriaEntity.builder().idCategoria(cid).build())
+                                .collect(Collectors.toSet());
+                        producto.setCategorias(categorias);
+                    }
+
+                    ProductoEntity updated = productoRepository.save(producto);
+
+                    if (dto.getPrecio() != null || dto.getMoneda() != null || dto.getVarianteActiva() != null) {
+                        VarianteEntity v = varianteRepository
+                                .findFirstByProducto_IdProductoOrderByIdVarianteAsc(id)
+                                .orElseGet(() -> VarianteEntity.builder()
+                                        .producto(updated)
+                                        .sku(generarSkuAuto(updated))
+                                        .precioBase(BigDecimal.ZERO)
+                                        .moneda("ARS")
+                                        .activo(true)
+                                        .build());
+
+                        if (dto.getPrecio() != null)         v.setPrecioBase(safePrecio(dto.getPrecio()));
+                        if (dto.getMoneda() != null)         v.setMoneda(safeMoneda(dto.getMoneda()));
+                        if (dto.getVarianteActiva() != null) v.setActivo(dto.getVarianteActiva());
+
+                        varianteRepository.save(v);
+                    }
+
+                    return new BaseResponse<>("Producto actualizado correctamente", 200, toDto(updated));
+                })
+                .orElse(new BaseResponse<>("Producto no encontrado", 404, null));
+    }
+
+    @Override
+    public BaseResponse<java.util.List<ProductoDto>> getAll() {
+        var items = productoRepository.findAll()
+                .stream().map(this::toDto).collect(Collectors.toList());
+        return new BaseResponse<>("Listado de productos", 200, items);
     }
 
     @Override
@@ -39,99 +127,79 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public BaseResponse<ProductoDto> create(ProductoDto dto) {
-        if (productoRepository.existsBySlug(dto.getSlug())) {
-            return new BaseResponse<>("El slug ya existe", 400, null);
-        }
-        ProductoEntity entity = toEntity(dto);
-        entity.setFechaCreacion(LocalDateTime.now());
-        entity.setFechaActualizacion(LocalDateTime.now());
-        ProductoEntity saved = productoRepository.save(entity);
-        return new BaseResponse<>("Producto creado correctamente", 201, toDto(saved));
-    }
-
-    @Override
-    public BaseResponse<ProductoDto> update(Long id, ProductoDto dto) {
-        return productoRepository.findById(id)
-                .map(producto -> {
-                    producto.setNombre(dto.getNombre());
-                    producto.setSlug(dto.getSlug());
-                    producto.setDescripcion(dto.getDescripcion());
-                    producto.setActivo(dto.getActivo());
-                    producto.setFechaActualizacion(LocalDateTime.now());
-
-                    // 🔹 Actualizar marcas
-                    if (dto.getMarcasIds() != null) {
-                        Set<MarcaEntity> marcas = dto.getMarcasIds().stream()
-                                .map(mid -> MarcaEntity.builder().idMarca(mid).build())
-                                .collect(Collectors.toSet());
-                        producto.setMarcas(marcas);
-                    }
-
-                    // 🔹 Actualizar categorías
-                    if (dto.getCategoriasIds() != null) {
-                        Set<CategoriaEntity> categorias = dto.getCategoriasIds().stream()
-                                .map(cid -> CategoriaEntity.builder().idCategoria(cid).build())
-                                .collect(Collectors.toSet());
-                        producto.setCategorias(categorias);
-                    }
-
-                    ProductoEntity updated = productoRepository.save(producto);
-                    return new BaseResponse<>("Producto actualizado correctamente", 200, toDto(updated));
-                })
-                .orElse(new BaseResponse<>("Producto no encontrado", 404, null));
-    }
-
-
-    @Override
     public BaseResponse<String> delete(Long id) {
-        if (!productoRepository.existsById(id)) {
+        if (!productoRepository.existsById(id))
             return new BaseResponse<>("Producto no encontrado", 404, null);
-        }
         productoRepository.deleteById(id);
-        return new BaseResponse<>("Producto eliminado correctamente", 200, null);
+        return new BaseResponse<>("Producto eliminado", 200, null);
     }
 
-    private ProductoDto toDto(ProductoEntity entity) {
-        return ProductoDto.builder()
-                .idProducto(entity.getIdProducto())
-                .nombre(entity.getNombre())
-                .slug(entity.getSlug())
-                .descripcion(entity.getDescripcion())
-                .activo(entity.getActivo())
-                .marcasIds(entity.getMarcas() != null
-                        ? entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet())
-                        : new HashSet<>())
-                .categoriasIds(entity.getCategorias() != null
-                        ? entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet())
-                        : new HashSet<>())
-                .build();
-    }
-
+    // ===== Helpers =====
 
     private ProductoEntity toEntity(ProductoDto dto) {
         ProductoEntity producto = ProductoEntity.builder()
                 .nombre(dto.getNombre())
                 .slug(dto.getSlug())
                 .descripcion(dto.getDescripcion())
-                .activo(dto.getActivo())
+                .activo(dto.getActivo() == null ? true : dto.getActivo())
                 .build();
 
         if (dto.getMarcasIds() != null) {
-            Set<MarcaEntity> marcas = dto.getMarcasIds().stream()
+            producto.setMarcas(dto.getMarcasIds().stream()
+                    .filter(id -> id != null && id > 0) // evita 0 y nulos
                     .map(id -> MarcaEntity.builder().idMarca(id).build())
-                    .collect(Collectors.toSet());
-            producto.setMarcas(marcas);
+                    .collect(Collectors.toSet()));
         }
-
         if (dto.getCategoriasIds() != null) {
-            Set<CategoriaEntity> categorias = dto.getCategoriasIds().stream()
+            producto.setCategorias(dto.getCategoriasIds().stream()
+                    .filter(id -> id != null && id > 0)
                     .map(id -> CategoriaEntity.builder().idCategoria(id).build())
-                    .collect(Collectors.toSet());
-            producto.setCategorias(categorias);
+                    .collect(Collectors.toSet()));
         }
-
         return producto;
     }
 
+    private ProductoDto toDto(ProductoEntity entity) {
+    // Buscar la variante principal del producto (la primera por Id)
+    var optVar = varianteRepository.findFirstByProducto_IdProductoOrderByIdVarianteAsc(entity.getIdProducto());
+
+    var dto = ProductoDto.builder()
+            .idProducto(entity.getIdProducto())
+            .nombre(entity.getNombre())
+            .slug(entity.getSlug())
+            .descripcion(entity.getDescripcion())
+            .activo(entity.getActivo())
+            .marcasIds(entity.getMarcas() == null ? null :
+                    entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet()))
+            .categoriasIds(entity.getCategorias() == null ? null :
+                    entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet()))
+            .build();
+
+    // Si existe variante, completar precio/moneda/activo
+    optVar.ifPresent(v -> {
+        dto.setPrecio(v.getPrecioBase());
+        dto.setMoneda(v.getMoneda());
+        dto.setVarianteActiva(v.getActivo());
+    });
+
+    return dto;
+}
+
+    private BigDecimal safePrecio(BigDecimal p) {
+        return p != null && p.compareTo(BigDecimal.ZERO) >= 0 ? p : BigDecimal.ZERO;
+    }
+
+    private String safeMoneda(String m) {
+        if (m == null || m.isBlank()) return "ARS";
+        String t = m.trim().toUpperCase();
+        return t.length() >= 3 ? t.substring(0,3) : "ARS";
+    }
+
+    private String generarSkuAuto(ProductoEntity p) {
+        String base = p.getSlug() != null
+                ? p.getSlug().replaceAll("[^A-Za-z0-9]+", "-").toUpperCase()
+                : "PROD";
+        return base + "-" + LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+    }
 }

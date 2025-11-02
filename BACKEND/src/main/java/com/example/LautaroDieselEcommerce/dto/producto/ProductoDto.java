@@ -1,6 +1,8 @@
 package com.example.LautaroDieselEcommerce.dto.producto;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
@@ -16,4 +18,9 @@ public class ProductoDto {
 
     private Set<Long> marcasIds;      // IDs de las marcas asociadas
     private Set<Long> categoriasIds;  // IDs de las categorías asociadas
+
+    
+    private BigDecimal precio;         // ej: 150000.00
+    private String moneda;             // ej: "ARS"
+    private Boolean varianteActiva;    // default true
 }

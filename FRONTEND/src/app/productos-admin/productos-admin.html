@@ -7,7 +7,10 @@
 	<div class="mb-4">
 		<h5 class="d-flex align-items-center justify-content-between">
 			<span>Productos</span>
-			<button class="btn btn-sm btn-primary" type="button" (click)="toggleCreate()">{{ showCreate ? 'Cerrar formulario' : 'Nuevo producto' }}</button>
+			<div class="d-flex gap-2">
+				<button class="btn btn-sm btn-outline-secondary" type="button" (click)="openManageModal('marcas')">Gestionar marcas/categorías</button>
+				<button class="btn btn-sm btn-primary" type="button" (click)="toggleCreate()">{{ showCreate ? 'Cerrar formulario' : 'Nuevo producto' }}</button>
+			</div>
 		</h5>
 		<table class="table table-sm table-striped">
 			<thead>
@@ -27,8 +30,8 @@
 					<td>{{ p.nombre }}</td>
 					<td>{{ p.slug }}</td>
 					<td>{{ p.activo ? 'Sí' : 'No' }}</td>
-					<td>{{ (p.marcasIds || p.marcas || []).length }}</td>
-					<td>{{ (p.categoriasIds || p.categorias || []).length }}</td>
+					<td style="max-width:220px; white-space:normal;">{{ getMarcaNames(p) || '-' }}</td>
+					<td style="max-width:220px; white-space:normal;">{{ getCategoriaNames(p) || '-' }}</td>
 					<td>
 						<button class="btn btn-sm btn-outline-primary me-2" type="button" (click)="edit(p)">Editar</button>
 						<button class="btn btn-sm btn-outline-danger" type="button" (click)="delete(p)">Eliminar</button>
@@ -36,6 +39,70 @@
 				</tr>
 			</tbody>
 		</table>
+	</div>
+
+	<!-- Manage marcas/categorias modal (simple Angular modal) -->
+	<div class="modal-backdrop" *ngIf="showManageEntitiesModal" (click)="closeManageModal()" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1040"></div>
+	<div *ngIf="showManageEntitiesModal" class="modal d-block" tabindex="-1" role="dialog" style="z-index:1050">
+		<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Gestionar Marcas y Categorías</h5>
+					<button type="button" class="btn-close" aria-label="Close" (click)="closeManageModal()"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<h6>Marcas</h6>
+							<div class="d-flex gap-2 mb-2">
+								<input class="form-control form-control-sm" placeholder="Buscar marcas..." [(ngModel)]="marcaFilter" (ngModelChange)="onMarcaFilterChange()" />
+								<input class="form-control form-control-sm" placeholder="Crear (coma-separadas)" [(ngModel)]="newMarcaName" />
+								<button class="btn btn-sm btn-primary" (click)="createMarca()">Crear</button>
+							</div>
+							<ul class="list-group" style="max-height:320px;overflow:auto">
+								<li *ngFor="let m of filteredMarcas" class="list-group-item d-flex justify-content-between align-items-center">
+									<div>
+										<span *ngIf="marcaEditingId !== (m.idMarca ?? m.id)">{{ m.nombre }}</span>
+										<div *ngIf="marcaEditingId === (m.idMarca ?? m.id)"><input class="form-control form-control-sm" [(ngModel)]="marcaEditingName" /></div>
+									</div>
+									<div class="btn-group btn-group-sm">
+										<button *ngIf="marcaEditingId !== (m.idMarca ?? m.id)" class="btn btn-outline-secondary" (click)="editMarcaStart(m)">Editar</button>
+										<button *ngIf="marcaEditingId === (m.idMarca ?? m.id)" class="btn btn-success" (click)="saveMarca()">Guardar</button>
+										<button *ngIf="marcaEditingId === (m.idMarca ?? m.id)" class="btn btn-secondary" (click)="cancelMarcaEdit()">Cancelar</button>
+										<button class="btn btn-danger" (click)="deleteMarca(m.idMarca ?? m.id)">Eliminar</button>
+									</div>
+								</li>
+							</ul>
+						</div>
+						<div class="col-md-6">
+							<h6>Categorías</h6>
+							<div class="d-flex gap-2 mb-2">
+								<input class="form-control form-control-sm" placeholder="Buscar categorías..." [(ngModel)]="categoriaFilter" (ngModelChange)="onCategoriaFilterChange()" />
+								<input class="form-control form-control-sm" placeholder="Crear (coma-separadas)" [(ngModel)]="newCategoriaName" />
+								<button class="btn btn-sm btn-primary" (click)="createCategoria()">Crear</button>
+							</div>
+							<ul class="list-group" style="max-height:320px;overflow:auto">
+								<li *ngFor="let c of filteredCategorias" class="list-group-item d-flex justify-content-between align-items-center">
+									<div>
+										<span *ngIf="categoriaEditingId !== (c.idCategoria ?? c.id)">{{ c.nombre }}</span>
+										<div *ngIf="categoriaEditingId === (c.idCategoria ?? c.id)"><input class="form-control form-control-sm" [(ngModel)]="categoriaEditingName" /></div>
+									</div>
+									<div class="btn-group btn-group-sm">
+										<button *ngIf="categoriaEditingId !== (c.idCategoria ?? c.id)" class="btn btn-outline-secondary" (click)="editCategoriaStart(c)">Editar</button>
+										<button *ngIf="categoriaEditingId === (c.idCategoria ?? c.id)" class="btn btn-success" (click)="saveCategoria()">Guardar</button>
+										<button *ngIf="categoriaEditingId === (c.idCategoria ?? c.id)" class="btn btn-secondary" (click)="cancelCategoriaEdit()">Cancelar</button>
+										<button class="btn btn-danger" (click)="deleteCategoria(c.idCategoria ?? c.id)">Eliminar</button>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" (click)="closeManageModal()">Cerrar</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Inline edit panel -->
@@ -72,12 +139,38 @@
 			<label class="form-check-label" for="editActivo">Activo</label>
 		</div>
 		<div class="mb-2">
-			<label class="form-label">IDs de marcas (coma-separados)</label>
-			<input class="form-control" [(ngModel)]="editModel.marcasIds" name="editMarcasIds" />
+			<label class="form-label">Marcas</label>
+			<div class="d-flex gap-2 mb-1">
+				<input class="form-control form-control-sm" placeholder="Buscar marcas..." [(ngModel)]="marcaFilter" (ngModelChange)="onMarcaFilterChange()" name="editMarcaSearch" />
+				<input class="form-control form-control-sm" placeholder="Nueva marca..." [(ngModel)]="newMarcaName" name="editNewMarca" />
+				<button class="btn btn-sm btn-primary" type="button" (click)="createMarca()">Crear</button>
+			</div>
+			<div class="row row-cols-2 row-cols-md-3 g-1 entity-grid">
+				<div *ngFor="let m of filteredMarcas" class="col">
+					<div class="form-check entity-item" [class.checked]="isMarcaChecked(m.idMarca ?? m.id, true)">
+						<input class="form-check-input" type="checkbox" [id]="'edit-marca-'+(m.idMarca ?? m.id)" [checked]="isMarcaChecked(m.idMarca ?? m.id, true)" (change)="toggleMarcaSelection(m.idMarca ?? m.id, $event.target.checked, true)" />
+						<label class="form-check-label entity-label" [for]="'edit-marca-'+(m.idMarca ?? m.id)">{{ m.nombre }}</label>
+					</div>
+				</div>
+			</div>
+
 		</div>
 		<div class="mb-2">
-			<label class="form-label">IDs de categorías (coma-separados)</label>
-			<input class="form-control" [(ngModel)]="editModel.categoriasIds" name="editCategoriasIds" />
+			<label class="form-label">Categorías</label>
+			<div class="d-flex gap-2 mb-1">
+				<input class="form-control form-control-sm" placeholder="Buscar categorías..." [(ngModel)]="categoriaFilter" (ngModelChange)="onCategoriaFilterChange()" name="editCategoriaSearch" />
+				<input class="form-control form-control-sm" placeholder="Nueva categoría..." [(ngModel)]="newCategoriaName" name="editNewCategoria" />
+				<button class="btn btn-sm btn-primary" type="button" (click)="createCategoria()">Crear</button>
+			</div>
+			<div class="row row-cols-2 row-cols-md-3 g-1 entity-grid">
+				<div *ngFor="let c of filteredCategorias" class="col">
+					<div class="form-check entity-item" [class.checked]="isCategoriaChecked(c.idCategoria ?? c.id, true)">
+						<input class="form-check-input" type="checkbox" [id]="'edit-cat-'+(c.idCategoria ?? c.id)" [checked]="isCategoriaChecked(c.idCategoria ?? c.id, true)" (change)="toggleCategoriaSelection(c.idCategoria ?? c.id, $event.target.checked, true)" />
+						<label class="form-check-label entity-label" [for]="'edit-cat-'+(c.idCategoria ?? c.id)">{{ c.nombre }}</label>
+					</div>
+				</div>
+			</div>
+
 		</div>
 		<div class="text-end">
 			<button class="btn btn-secondary me-2" (click)="cancelEdit()">Cancelar</button>
@@ -108,8 +201,20 @@
 		</div>
 
 		<div class="mb-3">
-			<label class="form-label">IDs de marcas (coma-separados)</label>
-			<input class="form-control" [(ngModel)]="model.marcasIds" name="marcasIds" placeholder="1,2,3" />
+			<label class="form-label">Marcas</label>
+			<div class="d-flex gap-2 mb-1">
+				<input class="form-control form-control-sm" placeholder="Buscar marcas..." [(ngModel)]="marcaFilter" (ngModelChange)="onMarcaFilterChange()" name="createMarcaSearch" />
+				<input class="form-control form-control-sm" placeholder="Nueva marca..." [(ngModel)]="newMarcaName" name="createNewMarca" />
+				<button class="btn btn-sm btn-primary" type="button" (click)="createMarca()">Crear</button>
+			</div>
+			<div class="row row-cols-2 row-cols-md-3 g-1 entity-grid">
+				<div *ngFor="let m of filteredMarcas" class="col">
+					<div class="form-check entity-item" [class.checked]="isMarcaChecked(m.idMarca ?? m.id, false)">
+						<input class="form-check-input" type="checkbox" [id]="'create-marca-'+(m.idMarca ?? m.id)" [checked]="isMarcaChecked(m.idMarca ?? m.id, false)" (change)="toggleMarcaSelection(m.idMarca ?? m.id, $event.target.checked, false)" />
+						<label class="form-check-label entity-label" [for]="'create-marca-'+(m.idMarca ?? m.id)">{{ m.nombre }}</label>
+					</div>
+				</div>
+			</div>
 		</div>
 		<div class="row">
 			<div class="col-md-4 mb-3">
@@ -127,8 +232,20 @@
 		</div>
 
 		<div class="mb-3">
-			<label class="form-label">IDs de categorías (coma-separados)</label>
-			<input class="form-control" [(ngModel)]="model.categoriasIds" name="categoriasIds" placeholder="1,2" />
+			<label class="form-label">Categorías</label>
+			<div class="d-flex gap-2 mb-1">
+				<input class="form-control form-control-sm" placeholder="Buscar categorías..." [(ngModel)]="categoriaFilter" (ngModelChange)="onCategoriaFilterChange()" name="createCategoriaSearch" />
+				<input class="form-control form-control-sm" placeholder="Nueva categoría..." [(ngModel)]="newCategoriaName" name="createNewCategoria2" />
+				<button class="btn btn-sm btn-primary" type="button" (click)="createCategoria()">Crear</button>
+			</div>
+			<div class="row row-cols-2 row-cols-md-3 g-1 entity-grid">
+				<div *ngFor="let c of filteredCategorias" class="col">
+					<div class="form-check entity-item" [class.checked]="isCategoriaChecked(c.idCategoria ?? c.id, false)">
+						<input class="form-check-input" type="checkbox" [id]="'create-cat-'+(c.idCategoria ?? c.id)" [checked]="isCategoriaChecked(c.idCategoria ?? c.id, false)" (change)="toggleCategoriaSelection(c.idCategoria ?? c.id, $event.target.checked, false)" />
+						<label class="form-check-label entity-label" [for]="'create-cat-'+(c.idCategoria ?? c.id)">{{ c.nombre }}</label>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<button class="btn btn-primary" type="submit" [disabled]="loading">Crear</button>

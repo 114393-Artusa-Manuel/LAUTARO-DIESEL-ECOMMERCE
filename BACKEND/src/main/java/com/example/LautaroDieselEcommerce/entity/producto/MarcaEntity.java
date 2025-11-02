@@ -18,7 +18,7 @@ public class MarcaEntity {
     @Column(name = "IdMarca")
     private Long idMarca;
 
-    @Column(name = "Nombre", nullable = false, unique = true, length = 120)
+    @Column(name = "Nombre", nullable = false, length = 200, unique = true)
     private String nombre;
 
     @Column(name = "Activa", nullable = false)
@@ -26,4 +26,10 @@ public class MarcaEntity {
 
     @Column(name = "FechaCreacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+    @PrePersist
+    void prePersist() {
+        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (activa == null) activa = true;
+    }
 }

@@ -7,6 +7,7 @@ import { AuthGuard } from './services/auth.guard';
 import { PanelAdmin } from './panel-admin/panel-admin';
 import { ProductosAdmin } from './productos-admin/productos-admin';
 import { PasswordRecovery } from './password-recovery/password-recovery';
+import { Productos } from './productos/productos';
 
 
 export const routes: Routes = [
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'password-recovery', component: PasswordRecovery },
   { path: 'register', component: Register },
+  { path: 'productos', component: Productos },
   { path: 'profile', component: Profile, canActivate: [AuthGuard] },
   { path: 'panel-admin', component: PanelAdmin, canActivate: [AuthGuard] },
   { path: 'admin/productos', component: ProductosAdmin, canActivate: [AuthGuard] },

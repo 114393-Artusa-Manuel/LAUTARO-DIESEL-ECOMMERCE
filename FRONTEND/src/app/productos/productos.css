@@ -1,0 +1,10 @@
+
+.product-card { border-radius: .5rem; overflow: hidden; }
+.placeholder-img { height: 140px; }
+.product-card .card-body { padding: .9rem; }
+.product-card .badge { font-weight: 600; }
+
+@media (max-width: 576px) {
+	.placeholder-img { height: 100px; }
+}
+

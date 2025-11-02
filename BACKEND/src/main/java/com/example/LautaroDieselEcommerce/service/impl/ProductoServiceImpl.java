@@ -9,6 +9,8 @@ import com.example.LautaroDieselEcommerce.entity.producto.VarianteEntity;
 import com.example.LautaroDieselEcommerce.repository.producto.ProductoRepository;
 import com.example.LautaroDieselEcommerce.repository.producto.VarianteRepository;
 import com.example.LautaroDieselEcommerce.service.ProductoService;
+import com.example.LautaroDieselEcommerce.service.MarcaService;
+import com.example.LautaroDieselEcommerce.service.CategoriaService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
     private final VarianteRepository varianteRepository;
+    private final MarcaService marcaService;
+    private final CategoriaService categoriaService;
 
     @Override
     @Transactional
@@ -35,7 +39,23 @@ public class ProductoServiceImpl implements ProductoService {
         if (productoRepository.existsBySlug(dto.getSlug()))
             return new BaseResponse<>("El slug ya existe", 400, null);
 
-        // Producto
+    // Validate marcas / categorias IDs using services (if provided)
+    if (dto.getMarcasIds() != null && !dto.getMarcasIds().isEmpty()) {
+        var invalid = dto.getMarcasIds().stream()
+            .filter(mid -> mid != null && mid > 0)
+            .filter(mid -> marcaService.getById(mid).getStatus() != 200)
+            .toList();
+        if (!invalid.isEmpty()) return new BaseResponse<ProductoDto>("Marcas inválidas: " + invalid, 400, null);
+    }
+    if (dto.getCategoriasIds() != null && !dto.getCategoriasIds().isEmpty()) {
+        var invalidCat = dto.getCategoriasIds().stream()
+            .filter(cid -> cid != null && cid > 0)
+            .filter(cid -> categoriaService.getById(cid).getStatus() != 200)
+            .toList();
+        if (!invalidCat.isEmpty()) return new BaseResponse<ProductoDto>("Categorias inválidas: " + invalidCat, 400, null);
+    }
+
+    // Producto
         ProductoEntity entity = toEntity(dto);
         entity.setFechaCreacion(LocalDateTime.now());
         entity.setFechaActualizacion(LocalDateTime.now());
@@ -73,6 +93,13 @@ public class ProductoServiceImpl implements ProductoService {
                     producto.setFechaActualizacion(LocalDateTime.now());
 
                     if (dto.getMarcasIds() != null) {
+            // validate marca ids
+            var invalid = dto.getMarcasIds().stream()
+                .filter(mid -> mid != null && mid > 0)
+                .filter(mid -> marcaService.getById(mid).getStatus() != 200)
+                .toList();
+            if (!invalid.isEmpty()) return new BaseResponse<ProductoDto>("Marcas inválidas: " + invalid, 400, null);
+
                         Set<MarcaEntity> marcas = dto.getMarcasIds().stream()
                                 .filter(mid -> mid != null && mid > 0)
                                 .map(mid -> MarcaEntity.builder().idMarca(mid).build())
@@ -80,6 +107,13 @@ public class ProductoServiceImpl implements ProductoService {
                         producto.setMarcas(marcas);
                     }
                     if (dto.getCategoriasIds() != null) {
+            // validate categoria ids
+            var invalidCat = dto.getCategoriasIds().stream()
+                .filter(cid -> cid != null && cid > 0)
+                .filter(cid -> categoriaService.getById(cid).getStatus() != 200)
+                .toList();
+            if (!invalidCat.isEmpty()) return new BaseResponse<ProductoDto>("Categorias inválidas: " + invalidCat, 400, null);
+
                         Set<CategoriaEntity> categorias = dto.getCategoriasIds().stream()
                                 .filter(cid -> cid != null && cid > 0)
                                 .map(cid -> CategoriaEntity.builder().idCategoria(cid).build())

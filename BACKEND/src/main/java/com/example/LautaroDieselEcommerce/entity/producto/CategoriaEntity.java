@@ -2,14 +2,11 @@ package com.example.LautaroDieselEcommerce.entity.producto;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Categoria")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class CategoriaEntity {
 
     @Id
@@ -17,12 +14,44 @@ public class CategoriaEntity {
     @Column(name = "IdCategoria")
     private Long idCategoria;
 
-    @Column(name = "Nombre", nullable = false, length = 120)
+    @Column(name = "Nombre", nullable = false, length = 200, unique = true)
     private String nombre;
 
-    @Column(name = "Slug", nullable = false, unique = true, length = 140)
-    private String slug;
+    @Column(name = "Slug", nullable = false, length = 220, unique = true)
+    private String slug; // <-- requerido por la DB
+
+    @Column(name = "IdPadre")
+    private Long idPadre;
 
     @Column(name = "Activa", nullable = false)
     private Boolean activa = true;
+
+    @Column(name = "FechaCreacion", nullable = false)
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+    @PrePersist
+    void prePersist() {
+        if (fechaCreacion == null) fechaCreacion = LocalDateTime.now();
+        if (activa == null) activa = true;
+        if (slug == null || slug.isBlank()) {
+            slug = generarSlug(nombre);
+        }
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        if (slug == null || slug.isBlank()) {
+            slug = generarSlug(nombre);
+        }
+    }
+
+    private String generarSlug(String s) {
+        if (s == null) return "categoria";
+        String ascii = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        String base = ascii.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
+        return base.isBlank() ? "categoria" : base;
+    }
 }

@@ -40,18 +40,19 @@ public class ProductoEntity {
 
     /* ==== Relaciones ==== */
     @ManyToMany
-    @JoinTable(
-            name = "ProductoMarca",
-            joinColumns = @JoinColumn(name = "IdProducto"),
-            inverseJoinColumns = @JoinColumn(name = "IdMarca")
-    )
-    private Set<MarcaEntity> marcas = new HashSet<>();
+@JoinTable(
+    name = "ProductoMarca",
+    joinColumns = @JoinColumn(name = "IdProducto"),
+    inverseJoinColumns = @JoinColumn(name = "IdMarca")
+)
+private Set<MarcaEntity> marcas = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "ProductoCategoria",
-            joinColumns = @JoinColumn(name = "IdProducto"),
-            inverseJoinColumns = @JoinColumn(name = "IdCategoria")
-    )
-    private Set<CategoriaEntity> categorias = new HashSet<>();
+@ManyToMany
+@JoinTable(
+    name = "ProductoCategoria",
+    joinColumns = @JoinColumn(name = "IdProducto"),
+    inverseJoinColumns = @JoinColumn(name = "IdCategoria")
+)
+private Set<CategoriaEntity> categorias = new HashSet<>();
+
 }

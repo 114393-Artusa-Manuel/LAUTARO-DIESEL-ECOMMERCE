@@ -1,1 +1,22 @@
-.placeholder-img { min-height: 260px; border-radius: 6px; }
+.placeholder-img {
+  min-height: 260px;
+  border-radius: 6px;
+}
+
+.carousel-item img {
+  max-height: 400px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+}
+
+.sombra {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+h3 {
+  font-weight: 600;
+}
+
+.text-muted {
+  font-size: 0.95rem;
+}

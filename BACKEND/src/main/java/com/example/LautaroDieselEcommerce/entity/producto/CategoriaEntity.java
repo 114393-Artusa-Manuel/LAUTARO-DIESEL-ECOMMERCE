@@ -14,10 +14,10 @@ public class CategoriaEntity {
     @Column(name = "IdCategoria")
     private Long idCategoria;
 
-    @Column(name = "Nombre", nullable = false, length = 200, unique = true)
+    @Column(name = "Nombre", nullable = false, length = 120, unique = true)
     private String nombre;
 
-    @Column(name = "Slug", nullable = false, length = 220, unique = true)
+    @Column(name = "Slug", nullable = false, length = 140, unique = true)
     private String slug; // <-- requerido por la DB
 
     @Column(name = "IdPadre")
@@ -26,8 +26,9 @@ public class CategoriaEntity {
     @Column(name = "Activa", nullable = false)
     private Boolean activa = true;
 
-    @Column(name = "FechaCreacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @Column(name = "FechaCreacion", nullable = false, columnDefinition = "DATETIME2 DEFAULT GETDATE()")
+    private LocalDateTime fechaCreacion;
+
 
     @PrePersist
     void prePersist() {

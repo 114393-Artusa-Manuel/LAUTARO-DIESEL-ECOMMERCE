@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a40a9ac1-2240-478b-93a4-13560ee16ff7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/controller/imagen/ImagenProductoController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/imagen/ImagenProductoDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/imagen/ImagenProductoEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/repository/imagen/ImagenProductoRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/ImagenProductoService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/ImagenProductoServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/GmailServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/GmailServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/PasswordRecoveryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/PasswordRecoveryServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/producto/CategoriaEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/producto/CategoriaEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/producto/MarcaEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/producto/MarcaEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/producto/ProductoEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/producto/ProductoEntity.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,27 +41,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Spring Boot.LautaroDieselEcommerceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Recuperacion-Contraseña&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/tbrep/OneDrive/Escritorio/Programacion/Facu/Tesis/LAUTARO-DIESEL-ECOMMERCE&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.repository.indices&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.LautaroDieselEcommerceApplication.executor": "Run",
+    "git-widget-placeholder": "origin/filtros",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/tbrep/OneDrive/Escritorio/Programacion/Facu/Tesis/LAUTARO-DIESEL-ECOMMERCE",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="LAUTARO-DIESEL-ECOMMERCE" />
@@ -99,6 +106,7 @@
       <workItem from="1761063927877" duration="1623000" />
       <workItem from="1761676446347" duration="6503000" />
       <workItem from="1761683865266" duration="1317000" />
+      <workItem from="1762176364995" duration="7331000" />
     </task>
     <servers />
   </component>

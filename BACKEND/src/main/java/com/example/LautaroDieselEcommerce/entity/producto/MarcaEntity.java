@@ -18,7 +18,7 @@ public class MarcaEntity {
     @Column(name = "IdMarca")
     private Long idMarca;
 
-    @Column(name = "Nombre", nullable = false, length = 200, unique = true)
+    @Column(name = "Nombre", nullable = false, length = 120, unique = true)
     private String nombre;
 
     @Column(name = "Activa", nullable = false)

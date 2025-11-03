@@ -1,9 +1,12 @@
 package com.example.LautaroDieselEcommerce.entity.producto;
 
+import com.example.LautaroDieselEcommerce.entity.imagen.ImagenProductoEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -54,5 +57,9 @@ private Set<MarcaEntity> marcas = new HashSet<>();
     inverseJoinColumns = @JoinColumn(name = "IdCategoria")
 )
 private Set<CategoriaEntity> categorias = new HashSet<>();
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orden ASC")
+    private List<ImagenProductoEntity> imagenes = new ArrayList<>();
 
 }

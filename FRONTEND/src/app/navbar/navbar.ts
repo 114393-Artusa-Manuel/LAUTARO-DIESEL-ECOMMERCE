@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { CartService } from '../services/cart.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -17,6 +18,8 @@ export class Navbar {
   // Use signals exposed by AuthService (Angular 17)
   isAuthenticated = this.auth.isAuthenticatedSignal;
   usuario = this.auth.usuarioSignal;
+  private cart = inject(CartService);
+  totalCount$ = this.cart.totalCount$;
 
   isAdmin(): boolean {
     const u = this.usuario();

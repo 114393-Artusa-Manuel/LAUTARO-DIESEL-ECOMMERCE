@@ -10,6 +10,9 @@
       <li class="nav-item">
         <a class="nav-link" routerLink="/productos" routerLinkActive="active">Productos</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/carrito" routerLinkActive="active">Carrito <span class="badge bg-primary ms-1">{{ (totalCount$ | async) || 0 }}</span></a>
+      </li>
       <li class="nav-item" *ngIf="!isAuthenticated()">
         <a class="nav-link" routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
       </li>

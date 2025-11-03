@@ -8,6 +8,8 @@ import { PanelAdmin } from './panel-admin/panel-admin';
 import { ProductosAdmin } from './productos-admin/productos-admin';
 import { PasswordRecovery } from './password-recovery/password-recovery';
 import { Productos } from './productos/productos';
+import { ProductoDetalle } from './producto-detalle/producto-detalle';
+import { Carrito } from './carrito/carrito';
 
 
 export const routes: Routes = [
@@ -17,6 +19,8 @@ export const routes: Routes = [
   { path: 'password-recovery', component: PasswordRecovery },
   { path: 'register', component: Register },
   { path: 'productos', component: Productos },
+  { path: 'productos/:id', component: ProductoDetalle },
+  { path: 'carrito', component: Carrito },
   { path: 'profile', component: Profile, canActivate: [AuthGuard] },
   { path: 'panel-admin', component: PanelAdmin, canActivate: [AuthGuard] },
   { path: 'admin/productos', component: ProductosAdmin, canActivate: [AuthGuard] },

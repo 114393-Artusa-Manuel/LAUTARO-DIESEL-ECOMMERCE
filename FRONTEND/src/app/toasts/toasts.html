@@ -1,0 +1,8 @@
+<div class="toast-wrapper" aria-live="polite" aria-atomic="true">
+  <div *ngFor="let t of toasts" class="toast-item shadow-sm" [ngClass]="'toast-'+(t.type || 'info')">
+    <div class="toast-body d-flex align-items-center justify-content-between">
+      <div>{{ t.text }}</div>
+      <button class="btn btn-sm btn-link text-white" (click)="dismiss(t.id)">&times;</button>
+    </div>
+  </div>
+</div>

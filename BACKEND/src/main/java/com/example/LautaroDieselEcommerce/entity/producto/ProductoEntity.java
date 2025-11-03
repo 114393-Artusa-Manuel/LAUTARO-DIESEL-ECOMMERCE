@@ -60,6 +60,6 @@ private Set<CategoriaEntity> categorias = new HashSet<>();
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orden ASC")
-    private List<ImagenProductoEntity> imagenes = new ArrayList<>();
+    private List<ImagenProductoEntity> imagenes;
 
 }

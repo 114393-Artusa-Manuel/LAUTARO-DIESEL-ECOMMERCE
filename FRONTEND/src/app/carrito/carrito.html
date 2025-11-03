@@ -15,8 +15,21 @@
           *ngFor="let it of items; trackBy: trackByProduct"
           class="list-group-item d-flex align-items-center gap-3"
         >
-          <div style="width:72px; height:72px; background:#f5f5f5; display:flex;align-items:center;justify-content:center;border-radius:6px">
-            Img
+          <!-- 🔹 Imagen del producto -->
+          <div
+            style="width:72px; height:72px; background:#f5f5f5; display:flex;align-items:center;justify-content:center;border-radius:6px;overflow:hidden"
+          >
+            <img
+              *ngIf="it.product?.imagenes && it.product.imagenes.length > 0"
+              [src]="it.product.imagenes[0].url"
+              [alt]="it.product.imagenes[0].textoAlt || it.product.nombre"
+              style="width:100%; height:100%; object-fit:cover;"
+            />
+            <span
+              *ngIf="!it.product?.imagenes || it.product.imagenes.length === 0"
+              class="text-muted small"
+              >Img</span
+            >
           </div>
 
           <div class="flex-grow-1">
@@ -24,7 +37,7 @@
             <div class="text-muted small">
               {{
                 it.product?.descripcion
-                  ? (it.product.descripcion | slice:0:80) +
+                  ? (it.product.descripcion | slice: 0:80) +
                     (it.product.descripcion.length > 80 ? '...' : '')
                   : ''
               }}
@@ -32,7 +45,7 @@
             <div class="mt-2">
               Precio unitario:
               <strong>
-                {{ (it.product?.precio ?? 0) | number:'1.2-2' }}
+                {{ (it.product?.precio ?? 0) | number: '1.2-2' }}
                 {{ it.product?.moneda || '' }}
               </strong>
             </div>
@@ -43,7 +56,9 @@
               <button
                 class="btn btn-outline-secondary"
                 (click)="update(getProdId(it), (it.quantity || 1) - 1)"
-              >-</button>
+              >
+                -
+              </button>
 
               <input
                 class="form-control text-center"
@@ -56,15 +71,19 @@
               <button
                 class="btn btn-outline-secondary"
                 (click)="update(getProdId(it), (it.quantity || 1) + 1)"
-              >+</button>
+              >
+                +
+              </button>
             </div>
 
             <div class="text-end">
               <div class="small text-muted">Subtotal</div>
               <div class="fw-bold">
                 {{
-                  ((it.product?.precio ?? 0) * (it.quantity || 1)) | number:'1.2-2'
-                }} {{ it.product?.moneda || '' }}
+                  ((it.product?.precio ?? 0) * (it.quantity || 1))
+                    | number: '1.2-2'
+                }}
+                {{ it.product?.moneda || '' }}
               </div>
               <button
                 class="btn btn-link btn-sm text-danger"
@@ -88,7 +107,9 @@
         <div class="text-end">
           <div class="small text-muted">Total</div>
           <div class="h5">
-            <span *ngIf="total$ | async as tot">{{ tot | number:'1.2-2' }}</span>
+            <span *ngIf="total$ | async as tot">{{
+              tot | number: '1.2-2'
+            }}</span>
             <small class="text-muted">ARS</small>
           </div>
           <button class="btn btn-primary mt-2">Ir a pagar</button>

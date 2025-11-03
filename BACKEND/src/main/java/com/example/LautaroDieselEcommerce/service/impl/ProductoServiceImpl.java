@@ -1,5 +1,6 @@
 package com.example.LautaroDieselEcommerce.service.impl;
 
+import com.example.LautaroDieselEcommerce.dto.imagen.ImagenProductoDto;
 import com.example.LautaroDieselEcommerce.dto.producto.ProductoDto;
 import com.example.LautaroDieselEcommerce.dto.usuario.BaseResponse;
 import com.example.LautaroDieselEcommerce.entity.producto.CategoriaEntity;
@@ -194,30 +195,44 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     private ProductoDto toDto(ProductoEntity entity) {
-    // Buscar la variante principal del producto (la primera por Id)
-    var optVar = varianteRepository.findFirstByProducto_IdProductoOrderByIdVarianteAsc(entity.getIdProducto());
+        var optVar = varianteRepository.findFirstByProducto_IdProductoOrderByIdVarianteAsc(entity.getIdProducto());
 
-    var dto = ProductoDto.builder()
-            .idProducto(entity.getIdProducto())
-            .nombre(entity.getNombre())
-            .slug(entity.getSlug())
-            .descripcion(entity.getDescripcion())
-            .activo(entity.getActivo())
-            .marcasIds(entity.getMarcas() == null ? null :
-                    entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet()))
-            .categoriasIds(entity.getCategorias() == null ? null :
-                    entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet()))
-            .build();
+        var dto = ProductoDto.builder()
+                .idProducto(entity.getIdProducto())
+                .nombre(entity.getNombre())
+                .slug(entity.getSlug())
+                .descripcion(entity.getDescripcion())
+                .activo(entity.getActivo())
+                .marcasIds(entity.getMarcas() == null ? null :
+                        entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet()))
+                .categoriasIds(entity.getCategorias() == null ? null :
+                        entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet()))
+                .build();
 
-    // Si existe variante, completar precio/moneda/activo
-    optVar.ifPresent(v -> {
-        dto.setPrecio(v.getPrecioBase());
-        dto.setMoneda(v.getMoneda());
-        dto.setVarianteActiva(v.getActivo());
-    });
+        // Si existe variante, completar precio/moneda/activo
+        optVar.ifPresent(v -> {
+            dto.setPrecio(v.getPrecioBase());
+            dto.setMoneda(v.getMoneda());
+            dto.setVarianteActiva(v.getActivo());
+        });
 
-    return dto;
-}
+        // 🔥 Mapeamos las imágenes si existen
+        if (entity.getImagenes() != null && !entity.getImagenes().isEmpty()) {
+            dto.setImagenes(
+                    entity.getImagenes().stream()
+                            .map(img -> ImagenProductoDto.builder()
+                                    .url(img.getUrl())
+                                    .textoAlt(img.getTextoAlt())
+                                    .orden(img.getOrden())
+                                    .build()
+                            )
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return dto;
+    }
+
 
     private BigDecimal safePrecio(BigDecimal p) {
         return p != null && p.compareTo(BigDecimal.ZERO) >= 0 ? p : BigDecimal.ZERO;

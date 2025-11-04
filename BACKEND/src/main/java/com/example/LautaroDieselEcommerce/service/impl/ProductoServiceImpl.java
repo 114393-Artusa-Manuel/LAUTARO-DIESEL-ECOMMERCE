@@ -14,10 +14,13 @@ import com.example.LautaroDieselEcommerce.service.MarcaService;
 import com.example.LautaroDieselEcommerce.service.CategoriaService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +28,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductoServiceImpl implements ProductoService {
 
-    private final ProductoRepository productoRepository;
+    @Autowired
+    private ProductoRepository productoRepository;
     private final VarianteRepository varianteRepository;
     private final MarcaService marcaService;
     private final CategoriaService categoriaService;
@@ -77,7 +81,9 @@ public class ProductoServiceImpl implements ProductoService {
     if (variante.getFechaCreacion() == null) variante.setFechaCreacion(LocalDateTime.now());
     if (variante.getFechaActualizacion() == null) variante.setFechaActualizacion(LocalDateTime.now());
 
-    varianteRepository.save(variante);
+        System.out.println("💰 Precio recibido en DTO: " + dto.getPrecio());
+
+        varianteRepository.save(variante);
 
         return new BaseResponse<>("Producto creado correctamente", 201, toDto(saved));
     }
@@ -177,6 +183,8 @@ public class ProductoServiceImpl implements ProductoService {
                 .slug(dto.getSlug())
                 .descripcion(dto.getDescripcion())
                 .activo(dto.getActivo() == null ? true : dto.getActivo())
+                .precio(safePrecio(dto.getPrecio()))
+                .stock(0)
                 .build();
 
         if (dto.getMarcasIds() != null) {
@@ -233,6 +241,11 @@ public class ProductoServiceImpl implements ProductoService {
         return dto;
     }
 
+    @Override
+    public BaseResponse<List<ProductoEntity>> filtrarProductos(Long categoriaId, Long marcaId, String nombre) {
+        List<ProductoEntity> productos = productoRepository.filtrarProductos(categoriaId, marcaId, nombre);
+        return new BaseResponse<>("Productos filtrados correctamente", HttpStatus.OK.value(), productos);
+    }
 
     private BigDecimal safePrecio(BigDecimal p) {
         return p != null && p.compareTo(BigDecimal.ZERO) >= 0 ? p : BigDecimal.ZERO;

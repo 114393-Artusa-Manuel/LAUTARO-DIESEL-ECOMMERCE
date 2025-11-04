@@ -1,85 +1,133 @@
 <div class="container py-4">
   <h3 class="mb-3">Productos</h3>
 
+  <!-- 🔍 FILTROS -->
+  <div class="card p-3 mb-4 shadow-sm">
+    <div class="row g-2">
+      <!-- Buscar por nombre -->
+      <div class="col-md-4">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por nombre..."
+          [(ngModel)]="filtroNombre"
+        />
+      </div>
+
+      <!-- Filtro por categoría -->
+      <div class="col-md-3">
+        <select class="form-select" [(ngModel)]="filtroCategoriaId">
+          <option [ngValue]="undefined">Todas las categorías</option>
+          <option *ngFor="let cat of categorias" [value]="cat.idCategoria">
+            {{ cat.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtro por marca -->
+      <div class="col-md-3">
+        <select class="form-select" [(ngModel)]="filtroMarcaId">
+          <option [ngValue]="undefined">Todas las marcas</option>
+          <option *ngFor="let m of marcas" [value]="m.idMarca">
+            {{ m.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Botón Filtrar -->
+      <div class="col-md-2 text-end">
+        <button class="btn btn-primary w-100" (click)="loadProducts()">Filtrar</button>
+      </div>
+    </div>
+
+    <!-- Botón limpiar -->
+    <div class="text-end mt-2">
+      <button class="btn btn-outline-secondary btn-sm" (click)="limpiarFiltros()">
+        Limpiar filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- 🔸 Mensajes -->
   <div *ngIf="message" class="alert alert-warning">{{ message }}</div>
 
+  <!-- 🔄 Loading -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Cargando...</span>
     </div>
   </div>
 
+  <!-- 🧱 Grilla de productos -->
   <div class="row g-3">
     <div *ngFor="let p of products" class="col-12 col-sm-6 col-md-4 col-lg-3">
       <div class="card h-100 product-card">
-        <!-- 🔹 Imagen del producto -->
+        <!-- Imagen -->
         <div
           class="card-img-top placeholder-img bg-light d-flex align-items-center justify-content-center"
-          style="min-height:200px; overflow:hidden"
+          style="min-height: 200px; overflow: hidden"
         >
+          <!-- 🔹 BADGE de descuento o stock -->
+          <span *ngIf="p.descuento && p.descuento > 0" class="badge-overlay badge-discount">
+            -{{ p.descuento }}%
+          </span>
+
+          <span *ngIf="!p.stock || p.stock <= 0" class="badge-overlay badge-outstock">
+            Sin stock
+          </span>
+
           <img
             *ngIf="p.imagenes && p.imagenes.length > 0"
             [src]="p.imagenes[0].url"
             [alt]="p.imagenes[0].textoAlt || p.nombre"
             class="img-fluid"
-            style="object-fit:cover; width:100%; height:100%;"
+            style="object-fit: cover; width: 100%; height: 100%"
           />
-          <span
-            *ngIf="!p.imagenes || p.imagenes.length === 0"
-            class="text-muted"
-            >Imagen</span
-          >
+          <span *ngIf="!p.imagenes || p.imagenes.length === 0" class="text-muted">Imagen</span>
         </div>
 
+        <!-- Detalle -->
         <div class="card-body d-flex flex-column">
           <h5 class="card-title">{{ p.nombre }}</h5>
           <p class="card-text text-muted small mb-2">
             {{
               p.descripcion
-                ? (p.descripcion | slice: 0: 100) +
-                  (p.descripcion.length > 100 ? '...' : '')
+                ? (p.descripcion | slice : 0 : 100) + (p.descripcion.length > 100 ? '...' : '')
                 : ''
             }}
           </p>
           <div class="mb-2">
             <strong *ngIf="p.precio != null"
-              >{{ p.precio | number: '1.2-2' }} {{ p.moneda || '' }}</strong
+              >{{ p.precio | number : '1.2-2' }} {{ p.moneda || '' }}</strong
             >
-            <span *ngIf="p.precio == null" class="text-muted"
-              >Precio no disponible</span
+            <span *ngIf="p.precio == null" class="text-muted">Precio no disponible</span>
+          </div>
+
+          <!-- Marcas y Categorías -->
+          <div class="d-flex flex-wrap gap-1 mb-2">
+            <span *ngFor="let m of p.marcas || p.marcasIds || []" class="badge bg-secondary">{{
+              m.nombre ?? m
+            }}</span>
+            <span
+              *ngFor="let c of p.categorias || p.categoriasIds || []"
+              class="badge bg-info text-dark"
+              >{{ c.nombre ?? c }}</span
             >
           </div>
 
-          <div class="mt-auto">
-            <div class="d-flex flex-wrap gap-1 mb-2">
-              <span
-                *ngFor="let m of (p.marcas || p.marcasIds || [])"
-                class="badge bg-secondary"
-                >{{ m.nombre ?? m }}</span
+          <!-- Botones -->
+          <div class="mt-auto d-flex justify-content-between align-items-center">
+            <ng-container *ngIf="hasProductId(p)">
+              <a
+                class="btn btn-sm btn-outline-primary"
+                [routerLink]="['/productos', getProductId(p)]"
+                >Ver</a
               >
-              <span
-                *ngFor="let c of (p.categorias || p.categoriasIds || [])"
-                class="badge bg-info text-dark"
-                >{{ c.nombre ?? c }}</span
-              >
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-              <ng-container *ngIf="hasProductId(p)">
-                <a
-                  class="btn btn-sm btn-outline-primary"
-                  [routerLink]="['/productos', getProductId(p)]"
-                  >Ver</a
-                >
-              </ng-container>
-              <ng-container *ngIf="!hasProductId(p)">
-                <button class="btn btn-sm btn-outline-secondary" disabled>
-                  Ver
-                </button>
-              </ng-container>
-              <button class="btn btn-sm btn-primary" (click)="addToCart(p)">
-                Comprar
-              </button>
-            </div>
+            </ng-container>
+            <ng-container *ngIf="!hasProductId(p)">
+              <button class="btn btn-sm btn-outline-secondary" disabled>Ver</button>
+            </ng-container>
+            <button class="btn btn-sm btn-primary" (click)="addToCart(p)">Comprar</button>
           </div>
         </div>
       </div>

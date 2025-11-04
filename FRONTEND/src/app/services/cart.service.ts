@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject, map, combineLatest } from 'rxjs';
 import { NotificationService } from './notification.service';
 
 export interface CartItem {
@@ -15,16 +15,39 @@ export class CartService {
   private itemsSubject = new BehaviorSubject<CartItem[]>(this._readFromStorage());
   items$ = this.itemsSubject.asObservable();
 
-  // cantidad total de ítems
+  // 🔹 NUEVO: cantidad total de productos (observable para el navbar)
   totalCount$ = this.items$.pipe(
-    map(items => items.reduce((s, i) => s + (Number(i.quantity) || 0), 0))
+    map(items => items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0))
   );
 
-  // total en $
-  totalPrice$ = this.items$.pipe(
+  // subtotal (sin descuentos)
+  subtotal$ = this.items$.pipe(
     map(items =>
-      items.reduce((s, i) => s + ((Number(i.product?.precio) || 0) * (Number(i.quantity) || 1)), 0)
+      items.reduce(
+        (sum, i) => sum + ((Number(i.product?.precio) || 0) * (Number(i.quantity) || 1)),
+        0
+      )
     )
+  );
+
+  // descuentos simulados (en el futuro vendrán del backend)
+  discount$ = this.items$.pipe(
+    map(items => {
+      let totalDiscount = 0;
+      for (const i of items) {
+        const base = (Number(i.product?.precio) || 0) * (Number(i.quantity) || 1);
+        // ejemplo: aplicar 10% si el producto tiene p.descuento = 10
+        if (i.product?.descuento && i.product.descuento > 0) {
+          totalDiscount += base * (i.product.descuento / 100);
+        }
+      }
+      return totalDiscount;
+    })
+  );
+
+  // total final (subtotal - descuento)
+  total$ = combineLatest([this.subtotal$, this.discount$]).pipe(
+    map(([subtotal, discount]) => subtotal - discount)
   );
 
   addItem(product: any, quantity = 1) {
@@ -45,7 +68,7 @@ export class CartService {
     try {
       const name = product?.nombre ?? product?.titulo ?? product?.name ?? 'Producto';
       this.notification.push(`${name} agregado al carrito.`, 'success', 2500);
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -81,10 +104,12 @@ export class CartService {
     return this.itemsSubject.getValue();
   }
 
-  // ====== helpers ======
+  /** Helpers */
   private _save(items: CartItem[]) {
     this.itemsSubject.next(items);
-    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items)); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+    } catch {}
   }
 
   private _readFromStorage(): CartItem[] {
@@ -92,19 +117,26 @@ export class CartService {
       const raw = localStorage.getItem(this.STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      // sanitizar cantidades
       return Array.isArray(parsed)
-        ? parsed.map((it: any) => ({ product: it?.product, quantity: Math.max(1, Number(it?.quantity) || 1) }))
+        ? parsed.map((it: any) => ({
+            product: it?.product,
+            quantity: Math.max(1, Number(it?.quantity) || 1)
+          }))
         : [];
     } catch {
       return [];
     }
   }
 
-  /** ID canónico: prioriza idProducto, luego id, productoId, productoID, _id, codigo, y por último slug */
   private _getId(p: any): string | null {
     const cand = [
-      p?.idProducto, p?.id, p?.productoId, p?.productoID, p?._id, p?.codigo, p?.slug
+      p?.idProducto,
+      p?.id,
+      p?.productoId,
+      p?.productoID,
+      p?._id,
+      p?.codigo,
+      p?.slug
     ];
     const first = cand.find(v => v !== null && v !== undefined && String(v).trim() !== '');
     return first !== undefined ? String(first).trim() : null;

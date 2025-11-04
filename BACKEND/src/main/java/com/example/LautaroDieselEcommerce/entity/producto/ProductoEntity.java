@@ -3,6 +3,8 @@ package com.example.LautaroDieselEcommerce.entity.producto;
 import com.example.LautaroDieselEcommerce.entity.imagen.ImagenProductoEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,6 +36,15 @@ public class ProductoEntity {
 
     @Column(name = "Activo", nullable = false)
     private Boolean activo = true;
+
+    @Column(name = "Precio", nullable = false)
+    private BigDecimal precio = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private Integer stock = 0;
+
+    @Column(name = "Descuento")
+    private Integer descuento = 0;
 
     @Column(name = "FechaCreacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();

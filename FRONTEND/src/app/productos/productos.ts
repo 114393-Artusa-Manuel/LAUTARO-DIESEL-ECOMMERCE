@@ -1,45 +1,85 @@
-
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ProductoService } from '../services/producto.service';
+import { CategoriaService } from '../services/categoria.service';
+import { MarcaService } from '../services/marca.service';
 import { CartService } from '../services/cart.service';
 
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './productos.html',
   styleUrls: ['./productos.css']
 })
 export class Productos implements OnInit {
   private productoService = inject(ProductoService);
+  private categoriaService = inject(CategoriaService);
+  private marcaService = inject(MarcaService);
   private cart = inject(CartService);
 
   products: any[] = [];
+  categorias: any[] = [];
+  marcas: any[] = [];
+
   loading = false;
   message = '';
 
+  // filtros
+  filtroNombre: string = '';
+  filtroCategoriaId?: number;
+  filtroMarcaId?: number;
+
   ngOnInit(): void {
+    this.loadFiltros();
     this.loadProducts();
+  }
+
+  loadFiltros() {
+    this.categoriaService.getAll().subscribe({
+      next: (res: any) => (this.categorias = res?.data ?? res ?? []),
+      error: (err: any) => console.error('Error al cargar categorías', err)
+    });
+
+    this.marcaService.getAll().subscribe({
+      next: (res: any) => (this.marcas = res?.data ?? res ?? []),
+      error: (err: any) => console.error('Error al cargar marcas', err)
+    });
   }
 
   loadProducts() {
     this.loading = true;
-    this.productoService.getAll().subscribe({
+    const params = {
+      nombre: this.filtroNombre?.trim() || undefined,
+      categoriaId: this.filtroCategoriaId || undefined,
+      marcaId: this.filtroMarcaId || undefined
+    };
+
+    this.productoService.getFiltered(params).subscribe({
       next: (res: any) => {
         this.loading = false;
-        if (Array.isArray(res)) this.products = res;
-        else if (res?.data && Array.isArray(res.data)) this.products = res.data;
-        else if (res?.data?.content && Array.isArray(res.data.content)) this.products = res.data.content;
-        else this.products = res?.data ?? res ?? [];
+        this.products = res?.data ?? [];
+        if (!this.products.length) {
+          this.message = 'No se encontraron productos con los filtros aplicados.';
+        } else {
+          this.message = '';
+        }
       },
       error: (err: any) => {
         this.loading = false;
-        console.error('Failed to load products', err);
-        this.message = 'No se pudieron cargar los productos';
+        console.error('Error al cargar productos', err);
+        this.message = 'Error al cargar productos.';
       }
     });
+  }
+
+  limpiarFiltros() {
+    this.filtroNombre = '';
+    this.filtroCategoriaId = undefined;
+    this.filtroMarcaId = undefined;
+    this.loadProducts();
   }
 
   addToCart(p: any) {
@@ -47,25 +87,24 @@ export class Productos implements OnInit {
     this.cart.addItem(p, 1);
   }
 
-  /**
-   * Try several common id/property names to produce a stable id to route by.
-   */
   getProductId(p: any): any {
-  return p?.idProducto ?? p?.id ?? p?.productoId ?? p?.productoID ?? p?._id ?? p?.codigo ?? p?.slug ?? null;
-}
+    return (
+      p?.idProducto ??
+      p?.id ??
+      p?.productoId ??
+      p?.productoID ??
+      p?._id ??
+      p?.codigo ??
+      p?.slug ??
+      null
+    );
+  }
 
-  /**
-   * Returns true when a usable id exists (including 0). This avoids treating 0 as falsy in templates.
-   */
   hasProductId(p: any): boolean {
-  const id = this.getProductId(p);
-  // permití 0 si alguna API lo usa
-  return id !== null && id !== undefined && String(id).trim() !== '';
-}
+    const id = this.getProductId(p);
+    return id !== null && id !== undefined && String(id).trim() !== '';
+  }
 
-  /**
-   * Small debug helper: return a compact string describing id candidates and top-level keys.
-   */
   getDebugInfo(p: any): string {
     try {
       if (!p) return '';

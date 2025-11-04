@@ -2,6 +2,8 @@ package com.example.LautaroDieselEcommerce.service;
 
 import com.example.LautaroDieselEcommerce.dto.producto.ProductoDto;
 import com.example.LautaroDieselEcommerce.dto.usuario.BaseResponse;
+import com.example.LautaroDieselEcommerce.entity.producto.ProductoEntity;
+
 import java.util.List;
 
 public interface ProductoService {
@@ -10,4 +12,5 @@ public interface ProductoService {
     BaseResponse<ProductoDto> create(ProductoDto dto);
     BaseResponse<ProductoDto> update(Long id, ProductoDto dto);
     BaseResponse<String> delete(Long id);
+    BaseResponse<List<ProductoEntity>> filtrarProductos(Long categoriaId, Long marcaId, String nombre);
 }

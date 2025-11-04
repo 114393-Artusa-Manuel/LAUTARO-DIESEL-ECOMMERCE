@@ -11,6 +11,16 @@ export class ProductoService {
   getAll(): Observable<any> {
     return this.http.get(this.base);
   }
+  getFiltered(params: { categoriaId?: number; marcaId?: number; nombre?: string }): Observable<any> {
+  const queryParams = new URLSearchParams();
+  if (params.categoriaId) queryParams.append('categoriaId', params.categoriaId.toString());
+  if (params.marcaId) queryParams.append('marcaId', params.marcaId.toString());
+  if (params.nombre) queryParams.append('nombre', params.nombre);
+
+  const url = `${this.base}/filtrar?${queryParams.toString()}`;
+  return this.http.get(url);
+}
+
 
   getById(id: number): Observable<any> {
     return this.http.get(`${this.base}/${id}`);

@@ -10,10 +10,10 @@ import { CartService } from '../services/cart.service';
   styleUrls: ['./carrito.css']
 })
 export class Carrito implements OnInit {
-  private cart = inject(CartService);
+  cart = inject(CartService);
   items$ = this.cart.items$;
-  total$ = this.cart.totalPrice$;
-
+  total$ = this.cart.total$;
+  
   ngOnInit(): void {}
 
   remove(id: any) { this.cart.remove(id); }

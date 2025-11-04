@@ -2,10 +2,16 @@ package com.example.LautaroDieselEcommerce.controller.producto;
 
 import com.example.LautaroDieselEcommerce.dto.producto.ProductoDto;
 import com.example.LautaroDieselEcommerce.dto.usuario.BaseResponse;
+import com.example.LautaroDieselEcommerce.entity.producto.ProductoEntity;
 import com.example.LautaroDieselEcommerce.service.ProductoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/productos")
@@ -13,7 +19,18 @@ import org.springframework.web.bind.annotation.*;
 public class ProductoController {
 
 
-    private final ProductoService productoService;
+    @Autowired
+    private ProductoService productoService;
+
+    @GetMapping("/filtrar")
+    public ResponseEntity<BaseResponse<List<ProductoEntity>>> filtrarProductos(
+            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) Long marcaId,
+            @RequestParam(required = false) String nombre
+    ) {
+        BaseResponse<List<ProductoEntity>> response = productoService.filtrarProductos(categoriaId, marcaId, nombre);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     @GetMapping
     public ResponseEntity<BaseResponse<?>> getAll() {

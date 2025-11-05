@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,7 +30,9 @@ public class OrdenServiceImpl implements OrdenService {
             return new BaseResponse<>("La orden no tiene productos", 400, null);
         }
 
-        // Validar stock
+        BigDecimal total = BigDecimal.ZERO;
+
+        // Validar stock y calcular total
         for (var item : request.getItems()) {
             ProductoEntity producto = productoRepository.findById(item.getIdProducto())
                     .orElse(null);
@@ -41,12 +44,16 @@ public class OrdenServiceImpl implements OrdenService {
             if (producto.getStock() == null || producto.getStock() < item.getCantidad()) {
                 return new BaseResponse<>("Stock insuficiente para el producto: " + producto.getNombre(), 400, null);
             }
+            BigDecimal precio = producto.getPrecio() != null ? producto.getPrecio() : BigDecimal.ZERO;
+            total = total.add(precio.multiply(BigDecimal.valueOf(item.getCantidad())));
         }
 
         // Crear la orden y descontar stock
         OrdenEntity orden = new OrdenEntity();
         orden.setFechaCreacion(LocalDateTime.now());
         orden.setEstado("CONFIRMADA");
+        orden.setTotal(total);
+
 
         List<ItemOrdenEntity> items = request.getItems().stream().map(item -> {
             ProductoEntity producto = productoRepository.findById(item.getIdProducto()).orElseThrow();

@@ -69,7 +69,7 @@
         >
           <!-- 🔹 BADGE de descuento o stock -->
           <span *ngIf="p.descuento && p.descuento > 0" class="badge-overlay badge-discount">
-            -${{ p.descuento }}%
+            -{{ p.descuento }}%
           </span>
 
           <span *ngIf="!p.stock || p.stock <= 0" class="badge-overlay badge-outstock">
@@ -96,23 +96,34 @@
                 : ''
             }}
           </p>
+
+          <!-- Precio -->
           <div class="mb-2">
-            <strong *ngIf="p.precio != null"
-              >${{ p.precio | number : '1.2-2' }} {{ p.moneda || '' }}</strong
-            >
+            <strong *ngIf="p.precio != null">
+              ${{ p.precio | number : '1.2-2' }} {{ p.moneda || '' }}
+            </strong>
             <span *ngIf="p.precio == null" class="text-muted">Precio no disponible</span>
+          </div>
+
+          <!-- 🔹 Stock disponible -->
+          <div class="mb-2">
+            <small class="text-muted">Stock disponible:</small>
+            <span [ngClass]="{'text-danger': p.stock <= 0, 'fw-bold': true}">
+              {{ p.stock > 0 ? p.stock : 'Sin stock' }}
+            </span>
           </div>
 
           <!-- Marcas y Categorías -->
           <div class="d-flex flex-wrap gap-1 mb-2">
-            <span *ngFor="let m of p.marcas || p.marcasIds || []" class="badge bg-secondary">{{
-              m.nombre ?? m
-            }}</span>
+            <span *ngFor="let m of p.marcas || p.marcasIds || []" class="badge bg-secondary">
+              {{ m.nombre ?? m }}
+            </span>
             <span
               *ngFor="let c of p.categorias || p.categoriasIds || []"
               class="badge bg-info text-dark"
-              >{{ c.nombre ?? c }}</span
             >
+              {{ c.nombre ?? c }}
+            </span>
           </div>
 
           <!-- Botones -->

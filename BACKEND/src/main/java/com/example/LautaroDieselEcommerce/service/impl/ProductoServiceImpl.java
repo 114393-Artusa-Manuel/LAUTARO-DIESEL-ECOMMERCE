@@ -98,6 +98,7 @@ public class ProductoServiceImpl implements ProductoService {
                     producto.setDescripcion(dto.getDescripcion());
                     if (dto.getActivo() != null) producto.setActivo(dto.getActivo());
                     producto.setFechaActualizacion(LocalDateTime.now());
+                    if (dto.getStock() != null) producto.setStock(dto.getStock());
 
                     if (dto.getMarcasIds() != null) {
             // validate marca ids
@@ -184,7 +185,7 @@ public class ProductoServiceImpl implements ProductoService {
                 .descripcion(dto.getDescripcion())
                 .activo(dto.getActivo() == null ? true : dto.getActivo())
                 .precio(safePrecio(dto.getPrecio()))
-                .stock(0)
+                .stock(dto.getStock() != null ? dto.getStock() : 0)
                 .build();
 
         if (dto.getMarcasIds() != null) {

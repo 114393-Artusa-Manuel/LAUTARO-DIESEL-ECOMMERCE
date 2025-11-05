@@ -58,6 +58,7 @@ export class ProductosAdmin implements OnInit {
     marcasIds: [], // array of selected marca ids
     categoriasIds: [], // array of selected categoria ids
     precio: null,
+    stock: 0,
     moneda: 'ARS',
     varianteActiva: true
   };
@@ -89,6 +90,7 @@ export class ProductosAdmin implements OnInit {
       ,precio: this.model.precio != null ? Number(this.model.precio) : null
       ,moneda: this.model.moneda ? this.model.moneda.toString().trim() : null
       ,varianteActiva: this.model.varianteActiva != null ? !!this.model.varianteActiva : null
+      ,stock: this.model.stock != null ? Number(this.model.stock) : 0
     };
     this.loading = true;
     this.productoService.create(payload).subscribe({
@@ -283,7 +285,8 @@ export class ProductosAdmin implements OnInit {
       categoriasIds: this.normalizeIdsField(this.editModel.categoriasIds).ids,
       precio: this.editModel.precio != null ? Number(this.editModel.precio) : null,
       moneda: this.editModel.moneda ? this.editModel.moneda.toString().trim() : null,
-      varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null
+      varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null,
+      stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0
     };
     this.loading = true;
     this.productoService.update(id, payload).subscribe({

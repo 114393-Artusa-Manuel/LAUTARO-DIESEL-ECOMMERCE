@@ -19,6 +19,7 @@ public class ProductoDto {
     private String descripcion;
     private Boolean activo;
 
+    private Integer stock;
     private Set<Long> marcasIds;      // IDs de las marcas asociadas
     private Set<Long> categoriasIds;  // IDs de las categorías asociadas
 

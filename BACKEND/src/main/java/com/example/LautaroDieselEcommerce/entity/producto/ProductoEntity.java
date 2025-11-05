@@ -41,7 +41,7 @@ public class ProductoEntity {
     private BigDecimal precio = BigDecimal.ZERO;
 
     @Column(nullable = false)
-    private Integer stock = 0;
+    private Integer stock;
 
     @Column(name = "Descuento")
     private Integer descuento = 0;

@@ -147,4 +147,28 @@ export class CartService {
     const s = String(v).trim();
     return s ? s : null;
   }
+
+  confirmarCompra() {
+  const items = this.getItemsSnapshot().map(i => ({
+    idProducto: i.product?.idProducto,
+    cantidad: i.quantity
+  }));
+
+  return fetch('http://localhost:8080/api/ordenes/confirmar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items })
+  })
+  .then(async res => {
+    const data = await res.json();
+    if (res.ok) {
+      this.notification.push('Compra confirmada correctamente ✅', 'success', 3000);
+      this.clear();
+    } else {
+      this.notification.push(data.mensaje || 'Error al confirmar compra ❌', 'error', 3000);
+    }
+    return data;
+  });
+}
+
 }

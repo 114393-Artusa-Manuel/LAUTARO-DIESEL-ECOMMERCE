@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-export type ToastType = 'info' | 'success' | 'warning' | 'danger';
+export type ToastType = 'info' | 'success' | 'warning' | 'danger' | 'error';
 
 export interface ToastMessage {
   id: string;

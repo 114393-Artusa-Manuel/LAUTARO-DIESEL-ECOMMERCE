@@ -104,6 +104,20 @@
         />
       </div>
 
+      <div class="mb-3">
+        <label for="editDescuento" class="form-label">Descuento (%)</label>
+        <input
+          type="number"
+          id="editDescuento"
+          class="form-control"
+          [(ngModel)]="editModel.descuento"
+          name="editDescuento"
+          min="0"
+          max="100"
+          placeholder="Ej: 10"
+        />
+      </div>
+
       <div class="form-check mb-3">
         <input
           class="form-check-input"
@@ -226,6 +240,29 @@
             name="stock"
             required
           />
+        </div>
+        <!-- 💸 Campo de descuento -->
+        <div class="mb-3">
+          <label for="descuento" class="form-label">Descuento (%)</label>
+          <input
+            type="number"
+            id="descuento"
+            name="descuento"
+            class="form-control"
+            [(ngModel)]="model.descuento"
+            placeholder="Ej: 20"
+            min="0"
+            max="100"
+          />
+          <small class="form-text text-muted">
+            Ingresá un valor entre 0 y 100. Si no tiene descuento, dejalo en 0.
+          </small>
+        </div>
+        <div *ngIf="model.precio && model.descuento" class="mt-2">
+          <span class="text-muted small">Precio final con descuento:</span>
+          <strong class="text-success ms-2">
+            ${{ model.precio * (1 - model.descuento / 100) | number : '1.2-2' }}
+          </strong>
         </div>
       </div>
 

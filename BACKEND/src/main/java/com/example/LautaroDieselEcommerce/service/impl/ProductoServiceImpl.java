@@ -99,7 +99,8 @@ public class ProductoServiceImpl implements ProductoService {
                     if (dto.getActivo() != null) producto.setActivo(dto.getActivo());
                     producto.setFechaActualizacion(LocalDateTime.now());
                     if (dto.getStock() != null) producto.setStock(dto.getStock());
-
+                    if (dto.getDescuento() != null) producto.setDescuento(dto.getDescuento());
+                    
                     if (dto.getMarcasIds() != null) {
             // validate marca ids
             var invalid = dto.getMarcasIds().stream()
@@ -186,6 +187,7 @@ public class ProductoServiceImpl implements ProductoService {
                 .activo(dto.getActivo() == null ? true : dto.getActivo())
                 .precio(safePrecio(dto.getPrecio()))
                 .stock(dto.getStock() != null ? dto.getStock() : 0)
+                .descuento(dto.getDescuento() != null ? dto.getDescuento() : 0)
                 .build();
 
         if (dto.getMarcasIds() != null) {
@@ -216,6 +218,7 @@ public class ProductoServiceImpl implements ProductoService {
                         entity.getMarcas().stream().map(MarcaEntity::getIdMarca).collect(Collectors.toSet()))
                 .categoriasIds(entity.getCategorias() == null ? null :
                         entity.getCategorias().stream().map(CategoriaEntity::getIdCategoria).collect(Collectors.toSet()))
+                .descuento(entity.getDescuento())
                 .build();
 
         // Si existe variante, completar precio/moneda/activo

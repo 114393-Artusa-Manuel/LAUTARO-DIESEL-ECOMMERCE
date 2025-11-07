@@ -59,6 +59,7 @@ export class ProductosAdmin implements OnInit {
     categoriasIds: [], // array of selected categoria ids
     precio: null,
     stock: 0,
+    descuento: 0,
     moneda: 'ARS',
     varianteActiva: true
   };
@@ -91,6 +92,7 @@ export class ProductosAdmin implements OnInit {
       ,moneda: this.model.moneda ? this.model.moneda.toString().trim() : null
       ,varianteActiva: this.model.varianteActiva != null ? !!this.model.varianteActiva : null
       ,stock: this.model.stock != null ? Number(this.model.stock) : 0
+      ,descuento: this.model.descuento != null ? Number(this.model.descuento) : 0
     };
     this.loading = true;
     this.productoService.create(payload).subscribe({
@@ -98,7 +100,7 @@ export class ProductosAdmin implements OnInit {
         this.loading = false;
         this.message = res?.mensaje ?? 'Producto creado';
         // reset form
-        this.model = { nombre: '', slug: '', descripcion: '', activo: true, marcasIds: [], categoriasIds: [], precio: null, moneda: 'ARS', varianteActiva: true };
+        this.model = { nombre: '', slug: '', descripcion: '', activo: true, marcasIds: [], categoriasIds: [], precio: null, moneda: 'ARS', varianteActiva: true, stock: 0, descuento: 0 };
         // refresh product list in-place for faster UX
         this.loadProducts();
         // close create form
@@ -286,7 +288,8 @@ export class ProductosAdmin implements OnInit {
       precio: this.editModel.precio != null ? Number(this.editModel.precio) : null,
       moneda: this.editModel.moneda ? this.editModel.moneda.toString().trim() : null,
       varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null,
-      stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0
+      stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0,
+      descuento: this.editModel.descuento != null ? Number(this.editModel.descuento) : 0 
     };
     this.loading = true;
     this.productoService.update(id, payload).subscribe({

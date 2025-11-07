@@ -51,7 +51,27 @@ public class DescuentoServiceImpl implements DescuentoService {
     @Override
     public BaseResponse<?> aplicarDescuentosCarrito(Long idUsuario) {
         var ahora = LocalDateTime.now();
-        var descuentos = descuentoRepository.findByActivoTrueAndFechaInicioBeforeAndFechaFinAfter(ahora, ahora);
-        return new BaseResponse<>("Descuentos aplicables", 200, descuentos);
+        var descuentosActivos = descuentoRepository
+                .findByActivoTrueAndFechaInicioBeforeAndFechaFinAfter(ahora, ahora);
+
+        // Filtrar por usuario o categoría
+        var aplicables = descuentosActivos.stream()
+                .filter(d ->
+                        (d.getUsuario() == null ||
+                                (d.getUsuario() != null && d.getUsuario().getId().equals(idUsuario)))
+                )
+                .map(d -> DescuentoDto.builder()
+                        .idDescuento(d.getIdDescuento())
+                        .porcentaje(d.getPorcentaje())
+                        .idCategoria(d.getCategoria() != null ? d.getCategoria().getIdCategoria() : null)
+                        .idUsuario(d.getUsuario() != null ? d.getUsuario().getId() : null)
+                        .fechaInicio(d.getFechaInicio())
+                        .fechaFin(d.getFechaFin())
+                        .activo(d.getActivo())
+                        .build()
+                ).toList();
+
+        return new BaseResponse<>("Descuentos aplicables", 200, aplicables);
     }
+
 }

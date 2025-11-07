@@ -13,24 +13,44 @@ export class Carrito implements OnInit {
   cart = inject(CartService);
   items$ = this.cart.items$;
   total$ = this.cart.total$;
-  
-  ngOnInit(): void {}
 
-  remove(id: any) { this.cart.remove(id); }
-  update(id: any, q: number) { this.cart.updateQuantity(id, Math.max(0, Math.floor(q))); }
-  clear() { this.cart.clear(); }
+  // ⚠️ Reemplazar este valor luego por el ID real del usuario autenticado
+  private readonly userId = 4;
 
-  trackByProduct = (_: number, it: any) =>
-  this.getProdId(it);
+  ngOnInit(): void {
+    //aplicar descuentos dinámicos desde el backend
+    this.cart.applyDiscounts(this.userId);
+  }
 
-getProdId(it: any): string | undefined {
-  const p = it?.product;
-  const c = p?.idProducto ?? p?.id ?? p?.productoId ?? p?.productoID ?? p?._id ?? p?.codigo ?? p?.slug;
-  return c !== undefined && c !== null ? String(c) : undefined;
-}
+  remove(id: any) {
+    this.cart.remove(id);
+  }
 
-toNumber(ev: Event): number {
-  const v = Number((ev.target as HTMLInputElement).value);
-  return isNaN(v) ? 1 : v;
-}
+  update(id: any, q: number) {
+    this.cart.updateQuantity(id, Math.max(0, Math.floor(q)));
+  }
+
+  clear() {
+    this.cart.clear();
+  }
+
+  trackByProduct = (_: number, it: any) => this.getProdId(it);
+
+  getProdId(it: any): string | undefined {
+    const p = it?.product;
+    const c =
+      p?.idProducto ??
+      p?.id ??
+      p?.productoId ??
+      p?.productoID ??
+      p?._id ??
+      p?.codigo ??
+      p?.slug;
+    return c !== undefined && c !== null ? String(c) : undefined;
+  }
+
+  toNumber(ev: Event): number {
+    const v = Number((ev.target as HTMLInputElement).value);
+    return isNaN(v) ? 1 : v;
+  }
 }

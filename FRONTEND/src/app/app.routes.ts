@@ -10,6 +10,12 @@ import { PasswordRecovery } from './password-recovery/password-recovery';
 import { Productos } from './productos/productos';
 import { ProductoDetalle } from './producto-detalle/producto-detalle';
 import { Carrito } from './carrito/carrito';
+import { CheckoutComponent } from './checkout/checkout.component';
+import { SuccessComponent } from './checkout/success.component';
+import { FailureComponent } from './checkout/failure.component';
+import { PendingComponent } from './checkout/pending.component';
+import { FaqComponent } from './pages/faq/faq.component';
+import { TerminosCondicionesComponent } from './pages/terminos-condiciones/terminos-condiciones.component';
 
 
 export const routes: Routes = [
@@ -24,5 +30,11 @@ export const routes: Routes = [
   { path: 'profile', component: Profile, canActivate: [AuthGuard] },
   { path: 'panel-admin', component: PanelAdmin, canActivate: [AuthGuard] },
   { path: 'admin/productos', component: ProductosAdmin, canActivate: [AuthGuard] },
-
+  { path: 'checkout', component: CheckoutComponent },
+  { path: 'checkout/success', component: SuccessComponent },
+  { path: 'checkout/failure', component: FailureComponent },
+  { path: 'checkout/pending', component: PendingComponent },
+  { path: 'terminos', component: TerminosCondicionesComponent },
+  { path: 'faq', component: FaqComponent },
+  { path: '**', redirectTo: 'checkout' },
 ];

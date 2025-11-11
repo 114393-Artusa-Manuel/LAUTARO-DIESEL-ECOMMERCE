@@ -5,9 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a40a9ac1-2240-478b-93a4-13560ee16ff7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/config/MercadoPagoInitializer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/controller/pago/MercadoPagoController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/pago/CrearPreferenciaRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/pago/CrearPreferenciaResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/pago/PagoStatusResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/entity/pago/PagoEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/repository/pago/PagoRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/MercadoPagoService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/MercadoPagoServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/producto/ProductoDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/dto/producto/ProductoDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/ProductoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/java/com/example/LautaroDieselEcommerce/service/impl/ProductoServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BACKEND/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/BACKEND/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FRONTEND/src/app/app.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/FRONTEND/src/app/app.routes.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +54,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;Spring Boot.LautaroDieselEcommerceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;origin/filtros&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;origin/mercado/pago&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/tbrep/OneDrive/Escritorio/Programacion/Facu/Tesis/LAUTARO-DIESEL-ECOMMERCE&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -104,6 +115,8 @@
       <workItem from="1762285742790" duration="9054000" />
       <workItem from="1762349355847" duration="7776000" />
       <workItem from="1762541907384" duration="3386000" />
+      <workItem from="1762808229384" duration="3696000" />
+      <workItem from="1762868917580" duration="1406000" />
     </task>
     <servers />
   </component>

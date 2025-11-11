@@ -51,6 +51,13 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- MercadoPago -->
+		<dependency>
+			<groupId>com.mercadopago</groupId>
+			<artifactId>sdk-java</artifactId>
+			<version>2.1.26</version>
+		</dependency>
+
 		<!-- ✅ Gmail API (versión moderna compatible con google-api-client 2.x) -->
 		<dependency>
 			<groupId>com.google.apis</groupId>

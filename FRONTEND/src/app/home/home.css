@@ -1,0 +1,31 @@
+.carousel-inner img { max-height: 320px; object-fit: cover; }
+.card-img-top { height: 160px; object-fit: cover; }
+@media (max-width: 576px) { .card-img-top { height: 120px; } }
+.carousel-caption { left: 1rem; right: auto; bottom: 1rem; }
+.btn-outline-secondary.active { background: #e9ecef; }
+.ld-home {
+  .ld-section-title {
+    border-left: 4px solid #dc3545;
+    padding-left: .75rem;
+    text-transform: uppercase;
+    font-size: .95rem;
+    letter-spacing: .08em;
+  }
+
+  .ld-hero {
+    background: radial-gradient(circle at top left, #343a40 0, #000 55%);
+  }
+
+  .ld-product-card img {
+    object-fit: cover;
+    height: 190px;
+  }
+
+  .ld-category-chip {
+    font-size: .85rem;
+  }
+
+  .ld-cta {
+    border: 1px solid #eee;
+  }
+}

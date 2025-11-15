@@ -39,10 +39,10 @@ public class UsuarioServiceImpl implements UsuarioService {
             return new BaseResponse<>("El correo ya está registrado", 400, null);
         }
     // Ignorar cualquier rolesIds enviado por el cliente y asignar siempre el rol 'particular'
-    RolEntity rolParticular = rolRepository.findByNombreIgnoreCase("particular")
+    RolEntity rolParticular = rolRepository.findByNombreIgnoreCase("administrador")
         .orElseGet(() -> {
             RolEntity nuevo = RolEntity.builder()
-                .nombre("particular")
+                .nombre("administrador")
                 .build();
             return rolRepository.save(nuevo);
         });

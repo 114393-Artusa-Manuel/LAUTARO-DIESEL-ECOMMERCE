@@ -268,4 +268,29 @@ public class ProductoServiceImpl implements ProductoService {
         return base + "-" + LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
     }
+    @Override
+public BaseResponse<List<BaseResponse<ProductoDto>>> createBulk(List<ProductoDto> dtos) {
+    if (dtos == null || dtos.isEmpty()) {
+        return new BaseResponse<>("Lista de productos vacía", 400, null);
+    }
+
+    var resultados = dtos.stream()
+            .map(dto -> {
+                try {
+                    
+                    return this.create(dto);
+                } catch (Exception ex) {
+                    return new BaseResponse<ProductoDto>(
+                            "Error inesperado: " + ex.getMessage(),
+                            500,
+                            null
+                    );
+                }
+            })
+            .toList();
+
+    
+    return new BaseResponse<>("Resultado de carga masiva", 207, resultados);
+}
+
 }

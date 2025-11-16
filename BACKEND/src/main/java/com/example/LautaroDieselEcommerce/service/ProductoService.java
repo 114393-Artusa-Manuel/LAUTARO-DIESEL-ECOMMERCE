@@ -13,4 +13,5 @@ public interface ProductoService {
     BaseResponse<ProductoDto> update(Long id, ProductoDto dto);
     BaseResponse<String> delete(Long id);
     BaseResponse<List<ProductoEntity>> filtrarProductos(Long categoriaId, Long marcaId, String nombre);
+    BaseResponse<List<BaseResponse<ProductoDto>>> createBulk(List<ProductoDto> dtos);
 }

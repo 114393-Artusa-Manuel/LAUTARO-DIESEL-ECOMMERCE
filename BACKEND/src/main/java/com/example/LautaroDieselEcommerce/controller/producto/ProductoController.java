@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:4200","http://localhost:5678"}, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/productos")
 @RequiredArgsConstructor
 public class ProductoController {
-
 
     @Autowired
     private ProductoService productoService;
@@ -26,8 +25,7 @@ public class ProductoController {
     public ResponseEntity<BaseResponse<List<ProductoEntity>>> filtrarProductos(
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) Long marcaId,
-            @RequestParam(required = false) String nombre
-    ) {
+            @RequestParam(required = false) String nombre) {
         BaseResponse<List<ProductoEntity>> response = productoService.filtrarProductos(categoriaId, marcaId, nombre);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -55,5 +53,11 @@ public class ProductoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<BaseResponse<?>> delete(@PathVariable Long id) {
         return ResponseEntity.ok(productoService.delete(id));
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<BaseResponse<?>> createBulk(@RequestBody List<ProductoDto> dtos) {
+    return ResponseEntity.status(HttpStatus.MULTI_STATUS)
+            .body(productoService.createBulk(dtos));
     }
 }

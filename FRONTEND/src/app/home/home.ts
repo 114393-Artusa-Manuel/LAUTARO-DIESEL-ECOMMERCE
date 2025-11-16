@@ -54,6 +54,9 @@ export class Home {
   categorias: any[] = [];
 
   products: any[] = [];
+  // products grouped by category key (used to show 4 categories with their products)
+  categoryProducts: Record<string, any[]> = {};
+  loadingCategoryProducts: Record<string, boolean> = {};
 
   constructor() {
     this.loadProducts();
@@ -78,8 +81,45 @@ export class Home {
       next: (res: any) => {
         const data = res?.data ?? res ?? [];
         this.categorias = Array.isArray(data) ? data : (data.content ?? []);
+        // once categories are loaded, fetch top categories products
+        this.loadTopCategoriesProducts();
       },
       error: () => {}
+    });
+  }
+
+  // Returns a stable string key for a category object
+  getCategoryKey(c: any): string {
+    return String(c?.id ?? c?.idCategoria ?? c ?? '');
+  }
+
+  loadTopCategoriesProducts() {
+    const top = (this.categorias || []).slice(0, 4);
+    for (const c of top) {
+      const key = this.getCategoryKey(c);
+      const id = c?.id ?? c?.idCategoria ?? null;
+      if (!id) {
+        this.categoryProducts[key] = [];
+        continue;
+      }
+      this.loadCategoryProducts(id, key);
+    }
+  }
+
+  loadCategoryProducts(categoriaId: number | string, key: string) {
+    this.loadingCategoryProducts[key] = true;
+    this.productoService.getFiltered({ categoriaId: Number(categoriaId) }).subscribe({
+      next: (res: any) => {
+        this.loadingCategoryProducts[key] = false;
+        const data = res?.data ?? res ?? [];
+        const items = Array.isArray(data) ? data : (data.content ?? []);
+        this.categoryProducts[key] = items;
+      },
+      error: (err: any) => {
+        this.loadingCategoryProducts[key] = false;
+        this.categoryProducts[key] = [];
+        console.warn('Failed to load category products', categoriaId, err);
+      }
     });
   }
 
@@ -173,6 +213,26 @@ export class Home {
     if (id || id === 0) return String(id);
     // fallback to a predictable index-based key
     return `_idx_${index ?? 0}`;
+  }
+  
+  // Extract a usable product id for routing (similar to Productos.getProductId)
+  getProductId(p: any): any {
+    return (
+      p?.idProducto ??
+      p?.id ??
+      p?.productoId ??
+      p?.productoID ??
+      p?._id ??
+      p?.codigo ??
+      p?.slug ??
+      p?.sku ??
+      null
+    );
+  }
+
+  hasProductId(p: any): boolean {
+    const id = this.getProductId(p);
+    return id !== null && id !== undefined && String(id).trim() !== '';
   }
     search() {
     const t = this.q.trim().toLowerCase();

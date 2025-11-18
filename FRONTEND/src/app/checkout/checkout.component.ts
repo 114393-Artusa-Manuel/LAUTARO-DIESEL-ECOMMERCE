@@ -44,7 +44,7 @@ export class CheckoutComponent implements OnInit {
 
     const req = {
       orderId,
-      payerEmail: 'test_user_123456@testuser.com', // correo de prueba
+      payerEmail: 'test_user_5003766021310630121@testuser.com', // correo de prueba
       currency: 'ARS',
       items: [
         { id: 'P001', title: 'Filtro de aceite', quantity: 1, unitPrice: 20000 },

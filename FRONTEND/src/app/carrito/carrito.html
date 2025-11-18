@@ -158,7 +158,10 @@
       <!-- 🔸 Acciones -->
       <div class="d-flex justify-content-between align-items-center mt-4">
         <button class="btn btn-outline-danger" (click)="clear()">Vaciar carrito</button>
-        <button class="btn btn-primary">Ir a pagar</button>
+        <button class="btn btn-primary" (click)="irAPagar(items)">
+  Ir a pagar
+</button>
+
       </div>
     </ng-container>
   </ng-container>

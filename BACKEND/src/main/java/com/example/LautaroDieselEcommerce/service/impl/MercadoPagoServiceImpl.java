@@ -103,6 +103,11 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .externalReference(req.getOrderId())
                 .build();
 
+        // 🔥🔥🔥 LOG AQUI — MUESTRA LA PREFERENCIA EXACTA QUE ROMPE MERCADO PAGO
+        System.out.println("========== PREFERENCE JSON ==========");
+        System.out.println(preferenceRequest);
+        System.out.println("=====================================");
+
         Preference preference;
         try {
             PreferenceClient client = new PreferenceClient();

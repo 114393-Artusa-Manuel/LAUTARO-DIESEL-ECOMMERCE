@@ -1,5 +1,17 @@
 <div class="container py-4">
   <h4>Crear producto</h4>
+<div class="mb-3 d-flex gap-2 align-items-center">
+  <button class="btn btn-sm btn-outline-primary"
+          (click)="dispararRecargaN8n()"
+          [disabled]="loadingRecarga">
+    <span *ngIf="loadingRecarga" class="spinner-border spinner-border-sm me-1"></span>
+    Recargar productos desde Excel (n8n)
+  </button>
+
+  <span *ngIf="recargaMsg" class="small text-muted">
+    {{ recargaMsg }}
+  </span>
+</div>
 
   <div *ngIf="message" class="alert alert-info">{{ message }}</div>
 
@@ -8,6 +20,9 @@
     <h5 class="d-flex align-items-center justify-content-between">
       <span>Productos</span>
       <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-success" type="button" (click)="reloadProducts()">
+          Recargar lista
+        </button>
         <button
           class="btn btn-sm btn-outline-secondary"
           type="button"

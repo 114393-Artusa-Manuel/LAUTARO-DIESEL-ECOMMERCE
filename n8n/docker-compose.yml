@@ -10,11 +10,28 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=manu
       - N8N_BASIC_AUTH_PASSWORD=algunaClaveSegura123
+
+      # Host y puerto
       - N8N_HOST=localhost
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
+      - N8N_WEBHOOK_URL=http://localhost:5678
+
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      # HABILITAR CORS PARA ANGULAR
+      # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      - N8N_CORS_ENABLED=true
+      - N8N_CORS_ALLOW_ORIGIN=http://localhost:4200
+      - N8N_CORS_ALLOW_METHODS=GET,POST,OPTIONS
+
+      # Tamaño máximo del body (opcional)
+      - N8N_PAYLOAD_SIZE_MAX=64mb
+
+      # Timeout ejecución flujos (opcional)
+      - N8N_EXECUTIONS_TIMEOUT=300
+
       - NODE_ENV=production
+
     volumes:
       - ./n8n_data:/home/node/.n8n
-      - ./files:/files   
-
+      - ./files:/files

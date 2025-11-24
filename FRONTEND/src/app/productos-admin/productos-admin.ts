@@ -5,6 +5,8 @@ import { ProductoService } from '../services/producto.service';
 import { MarcaService } from '../services/marca.service';
 import { CategoriaService } from '../services/categoria.service';
 import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment, environment1 } from '../../environments/environment';
 
 @Component({
   selector: 'app-productos-admin',
@@ -18,6 +20,7 @@ export class ProductosAdmin implements OnInit {
   private productoService = inject(ProductoService);
   private marcaService = inject(MarcaService);
   private categoriaService = inject(CategoriaService);
+  private http = inject(HttpClient);
 
   products: any[] = [];
   editModel: any = null;
@@ -259,6 +262,36 @@ export class ProductosAdmin implements OnInit {
         this.message = 'No se pudieron cargar los productos';
       }
     });
+  }
+
+  /**
+   * Refresh products and append status to `recargaMsg` so the admin sees what happened.
+   * This is used specifically after triggering the n8n recarga.
+   */
+  private refreshProductsReport(tag = '') {
+    console.debug('refreshProductsReport', tag);
+    this.productoService.getAll().subscribe({
+      next: (res: any) => {
+        if (Array.isArray(res)) this.products = res;
+        else if (res?.data && Array.isArray(res.data)) this.products = res.data;
+        else if (res?.data?.content && Array.isArray(res.data.content)) this.products = res.data.content;
+        else this.products = res?.data ?? res ?? [];
+        this.recargaMsg = (this.recargaMsg || '') + ` (${tag} refresh OK)`;
+      },
+      error: (err: any) => {
+        console.error('refreshProductsReport failed', err);
+        const body = err?.error ?? err;
+        let serverMsg = '';
+        try { serverMsg = body?.mensaje ?? body?.message ?? (typeof body === 'string' ? body : JSON.stringify(body)); } catch(e) { serverMsg = String(body); }
+        this.recargaMsg = (this.recargaMsg || '') + ` (${tag} refresh ERROR: ${serverMsg})`;
+      }
+    });
+  }
+
+  // Public helper to force a manual refresh from the template/button
+  reloadProducts() {
+    this.recargaMsg = 'Forzando recarga de lista...';
+    this.refreshProductsReport('manual');
   }
 
   edit(product: any) {
@@ -578,5 +611,59 @@ export class ProductosAdmin implements OnInit {
       if (checked && idx === -1) this.model.categoriasIds.push(num);
       if (!checked && idx > -1) this.model.categoriasIds.splice(idx, 1);
     }
+  }
+
+  //carga n8n 
+   loadingRecarga = false;
+  recargaMsg = '';
+
+  dispararRecargaN8n() {
+    this.loadingRecarga = true;
+    this.recargaMsg = '';
+    this.http.post(environment1.N8N_RELOAD_URL, {})
+      .subscribe({
+        next: (res: any) => {
+          console.log('n8n OK', res);
+          // Top-level message
+          const topMsg = res?.mensaje ?? res?.message ?? 'Recarga iniciada';
+
+          // If backend returns an array of results inside `data`, collect any inner errors
+          const inner = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+          const problems: string[] = [];
+
+          for (const item of inner) {
+            if (!item) continue;
+            // item may be a wrapper with mensaje/codigo
+            const code = item?.codigo ?? item?.status ?? null;
+            const msg = item?.mensaje ?? item?.message ?? JSON.stringify(item);
+            // consider codes >= 400 as problems (also include any non-200/201/204 codes)
+            if (code && Number(code) >= 400) problems.push(`${msg} (código ${code})`);
+            // sometimes code 207 (partial) should still report sub-errors
+            if (!code && item?.mensaje) problems.push(msg);
+          }
+
+          if (problems.length) {
+            this.recargaMsg = `${topMsg}. Errores: ${problems.join(' ; ')}. Usá 'Recargar lista' para actualizar la tabla.`;
+          } else {
+            this.recargaMsg = `${topMsg}. Éxito. Usá 'Recargar lista' para actualizar la tabla.`;
+          }
+
+          // stop loading immediately. Manual reload only (user will click 'Recargar lista')
+          this.loadingRecarga = false;
+        },
+        error: (err: any) => {
+          console.error('error n8n', err);
+          // Try to surface useful info from error body
+          const body = err?.error ?? err;
+          let serverMsg = '';
+          try {
+            serverMsg = body?.mensaje ?? body?.message ?? (typeof body === 'string' ? body : JSON.stringify(body));
+          } catch (e) {
+            serverMsg = String(body);
+          }
+          this.recargaMsg = `No se pudo disparar la recarga de productos: ${serverMsg}`;
+          this.loadingRecarga = false;
+        }
+      });
   }
 }

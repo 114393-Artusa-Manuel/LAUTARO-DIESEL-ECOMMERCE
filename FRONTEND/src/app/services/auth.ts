@@ -24,7 +24,7 @@ interface LoginResponse {
 })
 export class AuthService {
   //  URL base general del backend
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = 'https://synesthetic-dowily-oda.ngrok-free.dev:8080';
 
   private _usuario = signal<any | null>(
     typeof window !== 'undefined' &&

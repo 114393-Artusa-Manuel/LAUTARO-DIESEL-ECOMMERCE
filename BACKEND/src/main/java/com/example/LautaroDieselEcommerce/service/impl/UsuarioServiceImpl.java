@@ -35,19 +35,32 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public BaseResponse<UsuarioDto> crearUsuario(UsuarioCreateDto dto) {
+
         if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             return new BaseResponse<>("El correo ya está registrado", 400, null);
         }
-    // Ignorar cualquier rolesIds enviado por el cliente y asignar siempre el rol 'particular'
-    RolEntity rolParticular = rolRepository.findByNombreIgnoreCase("administrador")
-        .orElseGet(() -> {
-            RolEntity nuevo = RolEntity.builder()
-                .nombre("administrador")
-                .build();
-            return rolRepository.save(nuevo);
-        });
-    List<RolEntity> roles = new ArrayList<>();
-    roles.add(rolParticular);
+
+        // Lista donde se cargarán los roles
+        List<RolEntity> roles = new ArrayList<>();
+
+        // Si el cliente envía roles, los respetamos
+        if (dto.getRolesIds() != null && !dto.getRolesIds().isEmpty()) {
+            roles = rolRepository.findAllById(dto.getRolesIds());
+
+            if (roles.isEmpty()) {
+                return new BaseResponse<>("Los roles enviados no existen", 400, null);
+            }
+        }
+        else {
+            // Si NO envía roles → asignamos 'particular'
+            RolEntity rolParticular = rolRepository.findByNombreIgnoreCase("particular")
+                    .orElseGet(() -> rolRepository.save(
+                            RolEntity.builder().nombre("particular").build()
+                    ));
+
+            roles.add(rolParticular);
+        }
+
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .correo(dto.getCorreo())
                 .claveHash(passwordEncoder.encode(dto.getClave()))
@@ -63,6 +76,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         return new BaseResponse<>("Usuario creado con éxito", 201, mapToDTO(usuario));
     }
+
 
     @Override
     public BaseResponse<UsuarioDto> actualizarUsuario(Long id, UsuarioUpdateDto dto) {

@@ -8,20 +8,24 @@ import com.example.LautaroDieselEcommerce.entity.pago.PagoEntity;
 import com.example.LautaroDieselEcommerce.repository.orden.OrdenRepository;
 import com.example.LautaroDieselEcommerce.repository.pago.PagoRepository;
 import com.example.LautaroDieselEcommerce.service.MercadoPagoService;
+import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
 import com.mercadopago.client.preference.PreferencePayerRequest;
 import com.mercadopago.client.preference.PreferenceRequest;
+import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,24 +44,48 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
     @Value("${app.backend.base-url}")
     private String backend;
 
+    @Value("${mercadopago.access_token}")
+    private String mpAccessToken;
+
+    // ================================================================
+    // MÉTO DO PARA NORMALIZAR STRINGS Y EVITAR ERRORES EN MERCADO PAGO
+    // ================================================================
+    private String normalizar(String texto) {
+        if (texto == null) return "";
+        String limpio = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        limpio = limpio.replaceAll("\\p{M}", ""); // Quita acentos
+        limpio = limpio.replaceAll("[^A-Za-z0-9 .,-]", ""); // Quita caracteres inválidos
+        return limpio;
+    }
+
     // ================================================================
     // CREAR PREFERENCIA
     // ================================================================
     @Override
     public CrearPreferenciaResponse crearPreferencia(CrearPreferenciaRequest req) {
 
+        try {
+            MercadoPagoConfig.setAccessToken(mpAccessToken);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al configurar credenciales de Mercado Pago",
+                    e
+            );
+        }
+
         // 🔹 Crear lista de ítems
         List<PreferenceItemRequest> items = req.getItems().stream().map(it ->
                 PreferenceItemRequest.builder()
                         .id(it.getId())
-                        .title(it.getTitle())
+                        .title(normalizar(it.getTitle()))   // <<<<<<<<<<<<<< AQUI SE ARREGLA
                         .quantity(it.getQuantity())
                         .currencyId(req.getCurrency())
                         .unitPrice(it.getUnitPrice())
                         .build()
         ).toList();
 
-        // 🔹 Armar preferencia de Mercado Pago
+        // 🔹 Armar preferencia
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(items)
                 .payer(PreferencePayerRequest.builder()
@@ -70,20 +98,31 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                                 .failure(frontend + "/checkout/failure")
                                 .build()
                 )
-                .autoReturn("approved")
+                //.autoReturn("approved")
                 .notificationUrl(backend + "/api/payments/webhook")
-                .externalReference(req.getOrderId()) // guardamos el idOrden como referencia
+                .externalReference(req.getOrderId())
                 .build();
+
+        // 🔥🔥🔥 LOG AQUI — MUESTRA LA PREFERENCIA EXACTA QUE ROMPE MERCADO PAGO
+        System.out.println("========== PREFERENCE JSON ==========");
+        System.out.println(preferenceRequest);
+        System.out.println("=====================================");
 
         Preference preference;
         try {
             PreferenceClient client = new PreferenceClient();
             preference = client.create(preferenceRequest);
         } catch (Exception e) {
-            throw new ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al crear la preferencia en Mercado Pago: " + e.getMessage(),
-                    e
+            if (e instanceof MPApiException mpEx) {
+                System.out.println("========== ERROR MERCADO PAGO ==========");
+                System.out.println("Status code: " + mpEx.getApiResponse().getStatusCode());
+                System.out.println("Body: " + mpEx.getApiResponse().getContent());
+                System.out.println("========================================");
+            }
+                throw new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Error al crear la preferencia en Mercado Pago (ver consola).",
+                        e
             );
         }
 
@@ -92,7 +131,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 🔹 Guardar registro del pago (estado inicial "created")
+        // 🔹 Guardar pago
         PagoEntity pago = PagoEntity.builder()
                 .orderId(req.getOrderId())
                 .preferenceId(preference.getId())
@@ -106,7 +145,6 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
         pagoRepo.save(pago);
 
-        // 🔹 Devolver URLs y ID de preferencia
         return new CrearPreferenciaResponse(
                 preference.getId(),
                 preference.getInitPoint(),
@@ -115,12 +153,14 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
     }
 
     // ================================================================
-    // PROCESAR WEBHOOK (respuesta automática de MP)
+    // WEBHOOK
     // ================================================================
     @Override
     public void procesarWebhook(String type, String action, String paymentId, String rawJson) {
 
         if (!"payment".equalsIgnoreCase(type) || paymentId == null) return;
+
+        MercadoPagoConfig.setAccessToken(mpAccessToken);
 
         Payment payment;
         try {
@@ -134,18 +174,15 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
             );
         }
 
-        // 🔹 Extraer información del pago
-        String status = payment.getStatus();           // approved, pending, rejected
+        String status = payment.getStatus();
         String statusDetail = payment.getStatusDetail();
-        String orderId = payment.getExternalReference(); // el idOrden que mandamos
+        String orderId = payment.getExternalReference();
 
-        // 🔹 Buscar el pago en la base de datos
         PagoEntity pago = pagoRepo.findByOrderId(orderId)
                 .orElseThrow(() ->
                         new ResponseStatusException(NOT_FOUND, "Pago no encontrado para orderId: " + orderId)
                 );
 
-        // 🔹 Actualizar datos del pago
         pago.setPaymentId(String.valueOf(payment.getId()));
         pago.setStatus(status);
         pago.setStatusDetail(statusDetail);
@@ -156,7 +193,6 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
         pago.setRawNotificationJson(rawJson);
         pagoRepo.save(pago);
 
-        // 🔹 Actualizar el estado de la orden si existe
         try {
             Long idOrden = Long.parseLong(orderId);
             OrdenEntity orden = ordenRepo.findById(idOrden).orElse(null);
@@ -167,12 +203,12 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 ordenRepo.save(orden);
             }
         } catch (NumberFormatException e) {
-            // Si orderId no es numérico, ignoramos
+            // ignoramos si no es numérico
         }
     }
 
     // ================================================================
-    // CONSULTAR ESTADO DE PAGO POR ORDERID
+    // CONSULTAR ESTADO PAGO
     // ================================================================
     @Override
     public PagoStatusResponse getStatusByOrderId(String orderId) {

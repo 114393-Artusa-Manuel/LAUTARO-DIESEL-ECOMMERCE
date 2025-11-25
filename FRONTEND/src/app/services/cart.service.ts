@@ -211,7 +211,6 @@ export class CartService {
 
       if (res.ok) {
         this.notification.push('Compra confirmada correctamente ✅', 'success', 3000);
-        this.clear();
       } else {
         this.notification.push(
           data.mensaje || `Error al confirmar compra ❌ (Código ${res.status})`,

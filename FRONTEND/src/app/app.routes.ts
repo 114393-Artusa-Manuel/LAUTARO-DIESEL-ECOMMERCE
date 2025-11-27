@@ -36,5 +36,5 @@ export const routes: Routes = [
   { path: 'checkout/pending', component: PendingComponent },
   { path: 'terminos', component: TerminosCondicionesComponent },
   { path: 'faq', component: FaqComponent },
-  { path: '**', redirectTo: 'checkout' },
+  { path: '**', redirectTo: 'home' },
 ];

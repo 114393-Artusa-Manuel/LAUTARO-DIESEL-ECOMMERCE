@@ -28,10 +28,17 @@ public class PagoEntity {
     private String currency;                                // ARS
     private String payerEmail;
 
+    @Column
+    private String paymentMethod;
     private LocalDateTime dateCreated;
     private LocalDateTime dateApproved;
     private LocalDateTime updatedAt;
 
     @Lob
     private String rawNotificationJson;                     // opcional
+
+    public enum PaymentStatus {
+        PENDING, APPROVED, REJECTED, CANCELLED, REFUNDED
+    }
+
 }

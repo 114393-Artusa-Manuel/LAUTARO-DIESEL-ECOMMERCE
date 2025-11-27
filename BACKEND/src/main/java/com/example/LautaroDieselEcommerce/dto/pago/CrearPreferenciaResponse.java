@@ -9,5 +9,4 @@ import lombok.*;
 public class CrearPreferenciaResponse {
     private String preferenceId;
     private String initPoint;
-    private String sandboxInitPoint;
 }

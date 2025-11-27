@@ -57,28 +57,41 @@ export class Carrito implements OnInit {
     'test_user_161410446626707035@testuser.com',
   ];
 
-  irAPagar(items: any[]) {
-    const orderId = crypto.randomUUID();
-    //const orderId = this.ordenIdActual;
-    const buyer = this.testBuyers[Math.floor(Math.random() * this.testBuyers.length)];
+  async irAPagar(items: any[]) {
+  // 1️⃣ Crear la orden en el backend y guardar el ID real
+  const respOrden = await fetch('http://localhost:8080/api/ordenes/confirmar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: items.map(i => ({
+        idProducto: i.product.idProducto,
+        cantidad: i.quantity
+      }))
+    })
+  });
 
-    const req = {
-      orderId,
-      payerEmail: buyer,
-      currency: 'ARS',
-      items: items.map((i) => ({
-        id: i.product.idProducto,
-        title: i.product.nombre,
-        quantity: i.quantity,
-        unitPrice: i.finalPrice ?? i.product.precio,
-      })),
-    };
+  const data = await respOrden.json();
+  const orderId = data.data; // 👈 ID real de BD
+  sessionStorage.setItem('orderId', orderId);
 
-    this.pago.crearPreferencia(req).subscribe((res) => {
-      sessionStorage.setItem('orderId', orderId);
-      window.location.href = res.initPoint;
-    });
-  }
+  console.log('🧾 Orden creada con ID:', orderId);
+
+  // 2️⃣ Crear preferencia usando el orderId REAL
+  this.pago.crearPreferencia({
+    orderId,
+    payerEmail: 'test_user_73663551382686826247@testuser.com',
+    currency: 'ARS',
+    items: items.map(i => ({
+      id: i.product.idProducto,
+      title: i.product.nombre,
+      quantity: i.quantity,
+      unitPrice: i.finalPrice ?? i.product.precio
+    }))
+  }).subscribe(res => {
+    window.location.href = res.initPoint;
+  });
+}
+
 
   // ============================================================
   // 🛑 CONFIRMAR COMPRA — BLOQUEO DE DOBLE CLICK

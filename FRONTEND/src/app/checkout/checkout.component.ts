@@ -22,72 +22,49 @@ import { CartService } from '../services/cart.service';
 export class CheckoutComponent implements OnInit {
   loading = false;
   error = '';
-
-  // 👇 INYECCIÓN CORRECTA
-  pagoService = inject(PagoService);
-  cart = inject(CartService);
   private platformId = inject(PLATFORM_ID);
+
+  constructor(private pagoService: PagoService) {}
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const script = document.createElement('script');
-    script.src = 'https://sdk.mercadopago.com/js/v2';
-    script.onload = () => console.log('SDK MP cargado');
-    document.body.appendChild(script);
+    try {
+      const w = window as any;
+      if (!w.MercadoPago) {
+        const script = document.createElement('script');
+        script.src = 'https://sdk.mercadopago.com/js/v2';
+        script.onload = () => console.log('SDK MercadoPago cargado');
+        document.body.appendChild(script);
+      }
+    } catch {}
   }
 
+  cart = inject(CartService); // 👈 IMPORTANTE
+
   async pagar() {
-    this.loading = true;
-
-    // 1️⃣ Tomar items del carrito para crear la orden
-    const itemsCarrito = this.cart.getItemsSnapshot().map((i: any) => ({
-      idProducto: i.product.idProducto,
-      cantidad: i.quantity,
-    }));
-
-    const resp = await fetch(`${environment.backendBaseUrl}/api/ordenes/confirmar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: itemsCarrito }),
-    });
-
-    const data = await resp.json();
-
-    if (!resp.ok) {
-      this.loading = false;
-      this.error = data.mensaje || 'Error al generar orden';
+    const orderId = sessionStorage.getItem('orderId');
+    if (!orderId) {
+      this.error = 'No hay una orden generada. Volvé al carrito.';
       return;
     }
 
-    const orderId = data.data;
-    sessionStorage.setItem('orderId', orderId.toString());
+    const items = this.cart.getItemsSnapshot(); // <-- ya no dará error
 
-    console.log('🧾 Orden creada con ID:', orderId);
-
-    // 2️⃣ Crear preferencia MP con datos reales
     this.pagoService
       .crearPreferencia({
         orderId,
-        payerEmail: 'test_user_161410446626707035@testuser.com',
+        payerEmail: 'test_user_73663551382686826247@testuser.com',
         currency: 'ARS',
-        items: this.cart.getItemsSnapshot().map((i: any) => ({
+        items: items.map((i: any) => ({
           id: i.product.idProducto,
           title: i.product.nombre,
           quantity: i.quantity,
           unitPrice: i.finalPrice ?? i.product.precio,
         })),
       })
-      .subscribe({
-        next: (res: any) => {
-          this.loading = false;
-          localStorage.removeItem('carritoMp');
-          window.location.href = res.initPoint;
-        },
-        error: () => {
-          this.loading = false;
-          this.error = 'Error al crear preferencia';
-        },
+      .subscribe((res: any) => {
+        window.location.href = res.initPoint;
       });
   }
 }

@@ -51,6 +51,7 @@ export class Carrito implements OnInit {
   // ============================================================
   // 🚀 MÉTODO PARA CREAR LA PREFERENCIA Y REDIRIGIR A MERCADO PAGO
   // ============================================================
+
   // Emails test que ya tenés en tu cuenta de MercadoPago
   readonly testBuyers = [
     'test_user_73663551382686826247@testuser.com',
@@ -58,40 +59,44 @@ export class Carrito implements OnInit {
   ];
 
   async irAPagar(items: any[]) {
-  // 1️⃣ Crear la orden en el backend y guardar el ID real
-  const respOrden = await fetch('http://localhost:8080/api/ordenes/confirmar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      items: items.map(i => ({
-        idProducto: i.product.idProducto,
-        cantidad: i.quantity
-      }))
-    })
-  });
+    try {
+      // 1️⃣ Crear la orden con estado PENDIENTE
+      const respOrden = await fetch('http://localhost:8080/api/ordenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            idProducto: i.product.idProducto,
+            cantidad: i.quantity,
+          })),
+        }),
+      });
 
-  const data = await respOrden.json();
-  const orderId = data.data; // 👈 ID real de BD
-  sessionStorage.setItem('orderId', orderId);
+      const orderId = await respOrden.json(); // <- ID real devuelto por backend
+      sessionStorage.setItem('orderId', orderId.toString());
 
-  console.log('🧾 Orden creada con ID:', orderId);
+      console.log('🧾 Orden creada con ID:', orderId);
 
-  // 2️⃣ Crear preferencia usando el orderId REAL
-  this.pago.crearPreferencia({
-    orderId,
-    payerEmail: 'test_user_73663551382686826247@testuser.com',
-    currency: 'ARS',
-    items: items.map(i => ({
-      id: i.product.idProducto,
-      title: i.product.nombre,
-      quantity: i.quantity,
-      unitPrice: i.finalPrice ?? i.product.precio
-    }))
-  }).subscribe(res => {
-    window.location.href = res.initPoint;
-  });
-}
-
+      // 2️⃣ Crear preferencia MercadoPago
+      this.pago
+        .crearPreferencia({
+          orderId,
+          payerEmail: 'test_user_73663551382686826247@testuser.com',
+          currency: 'ARS',
+          items: items.map((i) => ({
+            id: i.product.idProducto,
+            title: i.product.nombre,
+            quantity: i.quantity,
+            unitPrice: i.finalPrice ?? i.product.precio,
+          })),
+        })
+        .subscribe((res) => {
+          window.location.href = res.initPoint;
+        });
+    } catch (e) {
+      console.error('❌ Error creando la orden o preferencia:', e);
+    }
+  }
 
   // ============================================================
   // 🛑 CONFIRMAR COMPRA — BLOQUEO DE DOBLE CLICK

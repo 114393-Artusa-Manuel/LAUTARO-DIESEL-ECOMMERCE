@@ -131,58 +131,44 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
 
     @Override
-    public void procesarWebhook(String type, String action, String id, String rawJson) {
+    public void procesarWebhook(String type, String id, String rawJson) {
 
         if (id == null) return;
 
         MercadoPagoConfig.setAccessToken(mpAccessToken);
 
         switch (type.toLowerCase()) {
-            case "payment" -> procesarPagoDirecto(id, rawJson);
+            case "payment" -> procesarPago(id, rawJson);
             case "merchant_order" -> procesarMerchantOrder(id, rawJson);
         }
     }
 
-    private void procesarPagoDirecto(String paymentEventId, String rawJson) {
+
+    public void procesarPago(String paymentId, String rawJson) {
         try {
-            MerchantOrder mo =
-                    new MerchantOrderClient().get(Long.parseLong(paymentEventId));
-
-            mo.getPayments().forEach(pmo -> {
-                try {
-                    PaymentClient pc = new PaymentClient();
-                    Payment payment = pc.get(pmo.getId());
-                    actualizarPago(payment, rawJson);
-                } catch (Exception ignored) {}
-            });
-
+            PaymentClient client = new PaymentClient();
+            Payment payment = client.get(Long.parseLong(paymentId));
+            actualizarPago(payment, rawJson);
         } catch (Exception e) {
             System.out.println("❌ Error procesando Payment directo: " + e.getMessage());
         }
     }
 
-
-
-    private void procesarMerchantOrder(String merchantOrderId, String rawJson) {
-        System.out.println("📦 Procesando MERCHANT_ORDER=" + merchantOrderId);
+    public void procesarMerchantOrder(String merchantOrderId, String rawJson) {
         try {
-            MerchantOrderClient client = new MerchantOrderClient();
-            MerchantOrder mo = client.get(Long.parseLong(merchantOrderId));
-            PaymentClient pc = new PaymentClient();
+            MerchantOrder mo = new MerchantOrderClient().get(Long.parseLong(merchantOrderId));
 
-            mo.getPayments().forEach(pagoMp -> {
+            mo.getPayments().forEach(payment -> {
                 try {
-                    Payment fullPayment = pc.get(pagoMp.getId());
+                    PaymentClient pc = new PaymentClient();
+                    Payment fullPayment = pc.get(payment.getId());
                     actualizarPago(fullPayment, rawJson);
-                } catch (Exception e) {
-                    System.out.println("❌ Error obteniendo Payment completo: " + e.getMessage());
-                }
+                } catch (Exception ignored) {}
             });
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error procesando MerchantOrder", e);
-        }
+        } catch (Exception ignored) {}
     }
+
 
 
     private void actualizarPago(Payment payment, String rawJson) {
@@ -208,7 +194,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
         if ("approved".equalsIgnoreCase(payment.getStatus())) {
             pago.setDateApproved(LocalDateTime.now());
-            actualizarOrden(orderId, "CONFIRMADA");
+            //actualizarOrden(orderId, "CONFIRMADA");
         }
 
         if ("rejected".equalsIgnoreCase(payment.getStatus())) {
@@ -220,11 +206,13 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
 
     private void actualizarOrden(String orderId, String nuevoEstado) {
-        ordenRepo.findById(Long.parseLong(orderId)).ifPresent(orden -> {
-            orden.setEstado(nuevoEstado);
-            ordenRepo.save(orden);
-        });
+        ordenRepo.findById(Long.parseLong(orderId))
+                .ifPresent(orden -> {
+                    orden.setEstado(nuevoEstado);
+                    ordenRepo.save(orden);
+                });
     }
+
 
     @Override
     public PagoStatusResponse getStatusByOrderId(String orderId) {

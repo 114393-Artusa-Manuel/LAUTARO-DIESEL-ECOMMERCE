@@ -77,4 +77,44 @@ public class OrdenServiceImpl implements OrdenService {
 
         return new BaseResponse<>("Orden confirmada correctamente", 201, orden.getIdOrden());
     }
+
+    @Override
+    @Transactional
+    public Long crearOrden(OrdenRequestDto request) {
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new RuntimeException("La orden no tiene productos");
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        // calcular total sin descontar stock
+        for (var item : request.getItems()) {
+            var producto = productoRepository.findById(item.getIdProducto())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+            total = total.add(
+                    producto.getPrecio().multiply(BigDecimal.valueOf(item.getCantidad()))
+            );
+        }
+
+        OrdenEntity orden = new OrdenEntity();
+        orden.setFechaCreacion(LocalDateTime.now());
+        orden.setEstado("PENDIENTE"); // 👈 CORRECTO
+        orden.setTotal(total);
+
+        List<ItemOrdenEntity> items = request.getItems().stream().map(item ->
+                ItemOrdenEntity.builder()
+                        .orden(orden)
+                        .producto(productoRepository.findById(item.getIdProducto()).orElseThrow())
+                        .cantidad(item.getCantidad())
+                        .precioUnitario(0.0)
+                        .build()
+        ).toList();
+
+        orden.setItems(items);
+        ordenRepository.save(orden);
+
+        return orden.getIdOrden();
+    }
+
 }

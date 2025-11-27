@@ -4,7 +4,9 @@ import com.example.LautaroDieselEcommerce.dto.pago.CrearPreferenciaRequest;
 import com.example.LautaroDieselEcommerce.dto.pago.CrearPreferenciaResponse;
 import com.example.LautaroDieselEcommerce.dto.pago.PagoStatusResponse;
 import com.example.LautaroDieselEcommerce.service.MercadoPagoService;
+import com.example.LautaroDieselEcommerce.service.impl.MercadoPagoServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +17,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MercadoPagoController {
 
-    private final MercadoPagoService pagoService;
+    @Autowired
+    private MercadoPagoService pagoService;
 
     @PostMapping("/preference")
     public ResponseEntity<CrearPreferenciaResponse> createPreference(@RequestBody CrearPreferenciaRequest req) {
@@ -24,36 +27,34 @@ public class MercadoPagoController {
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
-            @RequestBody(required = false) Map<String, Object> webhook,
-            @RequestParam(required = false) String id,
-            @RequestParam(required = false) String topic,
-            @RequestParam(required = false, name = "type") String type,
-            @RequestParam(required = false, name = "data.id") String dataId) {
+            @RequestParam(value = "topic", required = false) String topic,
+            @RequestParam(value = "id", required = false) String id,
+            @RequestBody(required = false) Map<String, Object> body) {
 
-        System.out.println("⚡ Webhook recibido");
+        System.out.println("⚡ Webhook recibido topic=" + topic + " id=" + id);
 
-        String paymentId = null;
+        try {
+            if (id == null && body != null && body.containsKey("data")) {
+                Map<String, Object> data = (Map<String, Object>) body.get("data");
+                id = String.valueOf(data.get("id"));
+            }
 
-        if (dataId != null) paymentId = dataId;
-        if (webhook != null && webhook.containsKey("data")) {
-            Object dataObj = webhook.get("data");
-            if (dataObj instanceof Map data && data.get("id") != null)
-                paymentId = String.valueOf(data.get("id"));
+            if (topic == null && body != null && body.containsKey("topic")) {
+                topic = String.valueOf(body.get("topic"));
+            }
+
+            if (topic == null || id == null) {
+                System.out.println("⚠ Webhook inválido");
+                return ResponseEntity.ok("IGNORED");
+            }
+
+            pagoService.procesarWebhook(topic, id, body != null ? body.toString() : null);
+        } catch (Exception e) {
+            System.out.println("❌ Error procesando webhook: " + e.getMessage());
         }
-        if (paymentId == null && webhook.containsKey("resource")) {
-            String res = String.valueOf(webhook.get("resource"));
-            paymentId = res.substring(res.lastIndexOf("/") + 1);
-        }
-        if (paymentId == null && id != null) paymentId = id;
 
-        if (paymentId == null) {
-            return ResponseEntity.badRequest().body("Missing payment ID");
-        }
-
-        pagoService.procesarWebhook("payment", null, paymentId, webhook.toString());
         return ResponseEntity.ok("OK");
     }
-
 
     @GetMapping("/status/{orderId}")
     public ResponseEntity<PagoStatusResponse> getStatus(@PathVariable String orderId) {

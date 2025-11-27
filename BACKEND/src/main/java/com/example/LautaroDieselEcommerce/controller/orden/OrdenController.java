@@ -19,4 +19,10 @@ public class OrdenController {
         BaseResponse<?> response = ordenService.confirmarOrden(request);
         return ResponseEntity.status(response.getCodigo()).body(response);
     }
+
+    @PostMapping
+    public ResponseEntity<Long> crearOrden(@RequestBody OrdenRequestDto request) {
+        return ResponseEntity.ok(ordenService.crearOrden(request));
+    }
+
 }

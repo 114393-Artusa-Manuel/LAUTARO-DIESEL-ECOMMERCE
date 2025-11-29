@@ -3,9 +3,7 @@
 
   <ng-container *ngIf="items$ | async as items; else loading">
     <!-- 🔹 Carrito vacío -->
-    <div *ngIf="items.length === 0" class="alert alert-info">
-      Tu carrito está vacío.
-    </div>
+    <div *ngIf="items.length === 0" class="alert alert-info">Tu carrito está vacío.</div>
 
     <!-- 🔹 Carrito con productos -->
     <ng-container *ngIf="items.length > 0">
@@ -43,7 +41,10 @@
 
             <!-- 🔸 Badge descuento -->
             <span
-              *ngIf="(it.discount && it.discount > 0) || (it.product?.descuento && it.product.descuento > 0)"
+              *ngIf="
+                (it.discount && it.discount > 0) ||
+                (it.product?.descuento && it.product.descuento > 0)
+              "
               class="badge bg-danger position-absolute top-0 start-0 m-1"
             >
               -{{ it.discount || it.product?.descuento }}%
@@ -67,7 +68,10 @@
               <div>
                 <!-- Precio original tachado -->
                 <strong
-                  *ngIf="(it.discount || it.product?.descuento) && (it.discount || it.product?.descuento) > 0"
+                  *ngIf="
+                    (it.discount || it.product?.descuento) &&
+                    (it.discount || it.product?.descuento) > 0
+                  "
                   class="text-decoration-line-through text-muted me-1"
                 >
                   ${{ it.product?.precio ?? 0 | number : '1.2-2' }}
@@ -75,9 +79,10 @@
                 <!-- Precio con descuento final -->
                 <strong class="text-success">
                   ${{
-                    (it.finalPrice ?? ((it.product?.precio ?? 0) * (1 - (it.product?.descuento ?? 0) / 100)))
+                    it.finalPrice ??
+                      (it.product?.precio ?? 0) * (1 - (it.product?.descuento ?? 0) / 100)
                       | number : '1.2-2'
-                  }} 
+                  }}
                   {{ it.product?.moneda || '' }}
                 </strong>
               </div>
@@ -114,8 +119,7 @@
               <div class="small text-muted">Subtotal</div>
               <div class="fw-bold">
                 ${{
-                  ((it.finalPrice ?? (it.product?.precio ?? 0)) *
-                    (it.quantity || 1))
+                  (it.finalPrice ?? (it.product?.precio ?? 0)) * (it.quantity || 1)
                     | number : '1.2-2'
                 }}
                 {{ it.product?.moneda || '' }}
@@ -149,19 +153,17 @@
         <button
           *ngIf="items.length > 0"
           class="btn btn-success w-100"
-          (click)="cart.confirmarCompra()"
+          (click)="confirmarCompra()"
+          [disabled]="isProcessing || compraConfirmada"
         >
-          Confirmar compra
+          {{ compraConfirmada ? 'Compra realizada' : 'Confirmar compra' }}
         </button>
       </div>
 
       <!-- 🔸 Acciones -->
       <div class="d-flex justify-content-between align-items-center mt-4">
         <button class="btn btn-outline-danger" (click)="clear()">Vaciar carrito</button>
-        <button class="btn btn-primary" (click)="irAPagar(items)">
-  Ir a pagar
-</button>
-
+        <button class="btn btn-primary" (click)="irAPagar(items)">Ir a pagar</button>
       </div>
     </ng-container>
   </ng-container>

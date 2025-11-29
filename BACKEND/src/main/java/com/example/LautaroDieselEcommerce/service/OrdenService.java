@@ -5,4 +5,5 @@ import com.example.LautaroDieselEcommerce.dto.usuario.BaseResponse;
 
 public interface OrdenService {
     BaseResponse<?> confirmarOrden(OrdenRequestDto request);
+    Long crearOrden(OrdenRequestDto request);
 }

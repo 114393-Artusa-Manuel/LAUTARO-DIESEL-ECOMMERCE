@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface PagoRepository extends JpaRepository<PagoEntity, Long> {
     Optional<PagoEntity> findByOrderId(String orderId);
     Optional<PagoEntity> findByPreferenceId(String preferenceId);
+    Optional<PagoEntity> findByPaymentId(String paymentId);
+    Optional<PagoEntity> findFirstByOrderId(String orderId);
+
 }

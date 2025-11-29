@@ -2,6 +2,8 @@ package com.example.LautaroDieselEcommerce.dto.pago;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,4 +14,6 @@ public class PagoStatusResponse {
     private String paymentId;
     private String status;
     private String statusDetail;
+    private String paymentMethod;
+    private BigDecimal amount;
 }

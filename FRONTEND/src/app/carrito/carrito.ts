@@ -8,21 +8,21 @@ import { PagoService } from '../services/pago.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './carrito.html',
-  styleUrls: ['./carrito.css']
+  styleUrls: ['./carrito.css'],
 })
 export class Carrito implements OnInit {
-  
   cart = inject(CartService);
-  pago = inject(PagoService);   // ✅ NECESARIO PARA MP
+  pago = inject(PagoService);
 
   items$ = this.cart.items$;
   total$ = this.cart.total$;
 
-  // ⚠️ Reemplazar luego por el ID real del usuario autenticado
   private readonly userId = 4;
 
+  // 🔐 Evita doble click en Confirmar compra
+  isProcessing: boolean = false;
+
   ngOnInit(): void {
-    // aplicar descuentos dinámicos desde el backend
     this.cart.applyDiscounts(this.userId);
   }
 
@@ -43,13 +43,7 @@ export class Carrito implements OnInit {
   getProdId(it: any): string | undefined {
     const p = it?.product;
     const c =
-      p?.idProducto ??
-      p?.id ??
-      p?.productoId ??
-      p?.productoID ??
-      p?._id ??
-      p?.codigo ??
-      p?.slug;
+      p?.idProducto ?? p?.id ?? p?.productoId ?? p?.productoID ?? p?._id ?? p?.codigo ?? p?.slug;
 
     return c !== undefined && c !== null ? String(c) : undefined;
   }
@@ -57,36 +51,74 @@ export class Carrito implements OnInit {
   // ============================================================
   // 🚀 MÉTODO PARA CREAR LA PREFERENCIA Y REDIRIGIR A MERCADO PAGO
   // ============================================================
-  irAPagar(items: any[]) {
-    const orderId = crypto.randomUUID();
 
-    const req = {
-      orderId,
-      payerEmail: 'test_user_5003766021310630121@testuser.com',
-      currency: 'ARS',
-      items: items.map(it => ({
-        id: this.getProdId(it),          // ✅ ID correcto
-        title: it.product.nombre,        // Nombre real del producto
-        quantity: it.quantity,           // Cantidad
-        unitPrice: it.finalPrice ?? it.product.precio // 💰 Precio final o normal
-      }))
-    };
+  // Emails test que ya tenés en tu cuenta de MercadoPago
+  readonly testBuyers = [
+    'test_user_73663551382686826247@testuser.com',
+    'test_user_161410446626707035@testuser.com',
+  ];
 
-    this.pago.crearPreferencia(req).subscribe({
-      next: (res: any) => {
-        sessionStorage.setItem('orderId', orderId);
+  async irAPagar(items: any[]) {
+    try {
+      // 1️⃣ Crear la orden con estado PENDIENTE
+      const respOrden = await fetch('http://localhost:8080/api/ordenes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            idProducto: i.product.idProducto,
+            cantidad: i.quantity,
+          })),
+        }),
+      });
 
-        // Redirigir al checkout de Mercado Pago
-        window.location.href = res.sandboxInitPoint ?? res.initPoint;
-      },
-      error: (err) => {
-        console.error('❌ Error creando preferencia', err);
-        alert('Error creando la preferencia de pago.');
-      }
-    });
+      const orderId = await respOrden.json(); // <- ID real devuelto por backend
+      sessionStorage.setItem('orderId', orderId.toString());
+
+      console.log('🧾 Orden creada con ID:', orderId);
+
+      // 2️⃣ Crear preferencia MercadoPago
+      this.pago
+        .crearPreferencia({
+          orderId,
+          payerEmail: 'test_user_73663551382686826247@testuser.com',
+          currency: 'ARS',
+          items: items.map((i) => ({
+            id: i.product.idProducto,
+            title: i.product.nombre,
+            quantity: i.quantity,
+            unitPrice: i.finalPrice ?? i.product.precio,
+          })),
+        })
+        .subscribe((res) => {
+          window.location.href = res.initPoint;
+        });
+    } catch (e) {
+      console.error('❌ Error creando la orden o preferencia:', e);
+    }
   }
 
-  // convertir string a number
+  // ============================================================
+  // 🛑 CONFIRMAR COMPRA — BLOQUEO DE DOBLE CLICK
+  // ============================================================
+  // 🚫 Bloquea el botón permanentemente después de confirmar
+  compraConfirmada: boolean = false;
+
+  async confirmarCompra() {
+    if (this.isProcessing) return;
+
+    this.isProcessing = true;
+
+    try {
+      await this.cart.confirmarCompra(); // descuenta stock con tu backend 👍
+      this.compraConfirmada = true; // 🔒 bloqueo permanente
+    } catch (err) {
+      console.error('Error confirmando compra:', err);
+    } finally {
+      this.isProcessing = false; // vuelve a texto normal del botón
+    }
+  }
+
   toNumber(ev: Event): number {
     const v = Number((ev.target as HTMLInputElement).value);
     return isNaN(v) ? 1 : v;

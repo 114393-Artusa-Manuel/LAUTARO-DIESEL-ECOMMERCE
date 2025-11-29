@@ -9,13 +9,10 @@ import com.example.LautaroDieselEcommerce.repository.orden.OrdenRepository;
 import com.example.LautaroDieselEcommerce.repository.pago.PagoRepository;
 import com.example.LautaroDieselEcommerce.service.MercadoPagoService;
 import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.merchantorder.MerchantOrderClient;
 import com.mercadopago.client.payment.PaymentClient;
-import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
-import com.mercadopago.client.preference.PreferenceClient;
-import com.mercadopago.client.preference.PreferenceItemRequest;
-import com.mercadopago.client.preference.PreferencePayerRequest;
-import com.mercadopago.client.preference.PreferenceRequest;
-import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.client.preference.*;
+import com.mercadopago.resources.merchantorder.MerchantOrder;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
 import lombok.RequiredArgsConstructor;
@@ -47,45 +44,23 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
     @Value("${mercadopago.access_token}")
     private String mpAccessToken;
 
-    // ================================================================
-    // MÉTO DO PARA NORMALIZAR STRINGS Y EVITAR ERRORES EN MERCADO PAGO
-    // ================================================================
-    private String normalizar(String texto) {
-        if (texto == null) return "";
-        String limpio = Normalizer.normalize(texto, Normalizer.Form.NFD);
-        limpio = limpio.replaceAll("\\p{M}", ""); // Quita acentos
-        limpio = limpio.replaceAll("[^A-Za-z0-9 .,-]", ""); // Quita caracteres inválidos
-        return limpio;
-    }
-
-    // ================================================================
-    // CREAR PREFERENCIA
-    // ================================================================
     @Override
     public CrearPreferenciaResponse crearPreferencia(CrearPreferenciaRequest req) {
 
-        try {
-            MercadoPagoConfig.setAccessToken(mpAccessToken);
-        } catch (Exception e) {
-            throw new ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al configurar credenciales de Mercado Pago",
-                    e
-            );
-        }
+        System.out.println("🚀 Crear Preferencia - OrderID: " + req.getOrderId());
 
-        // 🔹 Crear lista de ítems
+        MercadoPagoConfig.setAccessToken(mpAccessToken);
+
         List<PreferenceItemRequest> items = req.getItems().stream().map(it ->
                 PreferenceItemRequest.builder()
                         .id(it.getId())
-                        .title(normalizar(it.getTitle()))   // <<<<<<<<<<<<<< AQUI SE ARREGLA
+                        .title((it.getTitle()))
                         .quantity(it.getQuantity())
                         .currencyId(req.getCurrency())
                         .unitPrice(it.getUnitPrice())
                         .build()
         ).toList();
 
-        // 🔹 Armar preferencia
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(items)
                 .payer(PreferencePayerRequest.builder()
@@ -98,131 +73,161 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                                 .failure(frontend + "/checkout/failure")
                                 .build()
                 )
-                //.autoReturn("approved")
                 .notificationUrl(backend + "/api/payments/webhook")
                 .externalReference(req.getOrderId())
+                .autoReturn("")
                 .build();
 
-        // 🔥🔥🔥 LOG AQUI — MUESTRA LA PREFERENCIA EXACTA QUE ROMPE MERCADO PAGO
-        System.out.println("========== PREFERENCE JSON ==========");
-        System.out.println(preferenceRequest);
-        System.out.println("=====================================");
-
-        Preference preference;
         try {
+            System.out.println("📡 Enviando request a MercadoPago:");
+            System.out.println(preferenceRequest);
+
             PreferenceClient client = new PreferenceClient();
-            preference = client.create(preferenceRequest);
-        } catch (Exception e) {
-            if (e instanceof MPApiException mpEx) {
-                System.out.println("========== ERROR MERCADO PAGO ==========");
-                System.out.println("Status code: " + mpEx.getApiResponse().getStatusCode());
-                System.out.println("Body: " + mpEx.getApiResponse().getContent());
-                System.out.println("========================================");
+            Preference preference = client.create(preferenceRequest);
+
+            System.out.println("📥 Respuesta MercadoPago:");
+            System.out.println("🆔 Preference ID = " + preference.getId());
+            System.out.println("🔗 InitPoint = " + preference.getInitPoint());
+
+            if (preference.getId() == null) {
+                throw new RuntimeException("⚠️ MercadoPago devolvió preferenceId NULL");
             }
-                throw new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error al crear la preferencia en Mercado Pago (ver consola).",
-                        e
+
+            BigDecimal total = req.getItems().stream()
+                    .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            pagoRepo.save(PagoEntity.builder()
+                    .orderId(req.getOrderId())
+                    .preferenceId(preference.getId())
+                    .payerEmail(req.getPayerEmail())
+                    .currency(req.getCurrency())
+                    .amount(total)
+                    .status("pending")
+                    .dateCreated(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build());
+
+            return new CrearPreferenciaResponse(
+                    preference.getId(),
+                    preference.getInitPoint()
+            );
+
+        } catch (Exception e) {
+
+            System.out.println("❌ ERROR MercadoPago: " + e.getMessage());
+
+            if (e instanceof com.mercadopago.exceptions.MPApiException mpApiEx) {
+                System.out.println("💥 MP ERROR DETAIL: " +
+                        mpApiEx.getApiResponse().getContent());
+            }
+
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al crear preferencia", e
             );
         }
-
-        // 🔹 Calcular total
-        BigDecimal total = req.getItems().stream()
-                .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // 🔹 Guardar pago
-        PagoEntity pago = PagoEntity.builder()
-                .orderId(req.getOrderId())
-                .preferenceId(preference.getId())
-                .payerEmail(req.getPayerEmail())
-                .currency(req.getCurrency())
-                .amount(total)
-                .status("created")
-                .dateCreated(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        pagoRepo.save(pago);
-
-        return new CrearPreferenciaResponse(
-                preference.getId(),
-                preference.getInitPoint(),
-                preference.getSandboxInitPoint()
-        );
     }
 
-    // ================================================================
-    // WEBHOOK
-    // ================================================================
-    @Override
-    public void procesarWebhook(String type, String action, String paymentId, String rawJson) {
 
-        if (!"payment".equalsIgnoreCase(type) || paymentId == null) return;
+    @Override
+    public void procesarWebhook(String type, String id, String rawJson) {
+
+        if (id == null) return;
 
         MercadoPagoConfig.setAccessToken(mpAccessToken);
 
-        Payment payment;
-        try {
-            PaymentClient paymentClient = new PaymentClient();
-            payment = paymentClient.get(Long.parseLong(paymentId));
-        } catch (Exception e) {
-            throw new ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al obtener el pago desde Mercado Pago: " + e.getMessage(),
-                    e
-            );
-        }
-
-        String status = payment.getStatus();
-        String statusDetail = payment.getStatusDetail();
-        String orderId = payment.getExternalReference();
-
-        PagoEntity pago = pagoRepo.findByOrderId(orderId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(NOT_FOUND, "Pago no encontrado para orderId: " + orderId)
-                );
-
-        pago.setPaymentId(String.valueOf(payment.getId()));
-        pago.setStatus(status);
-        pago.setStatusDetail(statusDetail);
-        pago.setUpdatedAt(LocalDateTime.now());
-        if ("approved".equalsIgnoreCase(status)) {
-            pago.setDateApproved(LocalDateTime.now());
-        }
-        pago.setRawNotificationJson(rawJson);
-        pagoRepo.save(pago);
-
-        try {
-            Long idOrden = Long.parseLong(orderId);
-            OrdenEntity orden = ordenRepo.findById(idOrden).orElse(null);
-            if (orden != null) {
-                if ("approved".equalsIgnoreCase(status)) orden.setEstado("CONFIRMADA");
-                else if ("rejected".equalsIgnoreCase(status)) orden.setEstado("RECHAZADA");
-                else orden.setEstado("PENDIENTE");
-                ordenRepo.save(orden);
-            }
-        } catch (NumberFormatException e) {
-            // ignoramos si no es numérico
+        switch (type.toLowerCase()) {
+            case "payment" -> procesarPago(id, rawJson);
+            case "merchant_order" -> procesarMerchantOrder(id, rawJson);
         }
     }
 
-    // ================================================================
-    // CONSULTAR ESTADO PAGO
-    // ================================================================
+
+    public void procesarPago(String paymentId, String rawJson) {
+        try {
+            PaymentClient client = new PaymentClient();
+            Payment payment = client.get(Long.parseLong(paymentId));
+            actualizarPago(payment, rawJson);
+        } catch (Exception e) {
+            System.out.println("❌ Error procesando Payment directo: " + e.getMessage());
+        }
+    }
+
+    public void procesarMerchantOrder(String merchantOrderId, String rawJson) {
+        try {
+            MerchantOrder mo = new MerchantOrderClient().get(Long.parseLong(merchantOrderId));
+
+            mo.getPayments().forEach(payment -> {
+                try {
+                    PaymentClient pc = new PaymentClient();
+                    Payment fullPayment = pc.get(payment.getId());
+                    actualizarPago(fullPayment, rawJson);
+                } catch (Exception ignored) {}
+            });
+
+        } catch (Exception ignored) {}
+    }
+
+
+
+    private void actualizarPago(Payment payment, String rawJson) {
+
+        String orderId = payment.getExternalReference(); // 👍 viene directo del POST
+        if (orderId == null) {
+            System.out.println("❌ No hay external_reference en el pago");
+            return;
+        }
+
+        PagoEntity pago = pagoRepo.findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado para orderId=" + orderId));
+
+        System.out.println("📝 Actualizando pago — Order=" + orderId + " Status=" + payment.getStatus());
+
+        pago.setPaymentId(String.valueOf(payment.getId()));
+        pago.setStatus(payment.getStatus());
+        pago.setStatusDetail(payment.getStatusDetail());
+        pago.setPaymentMethod(payment.getPaymentMethodId());
+        pago.setPayerEmail(payment.getPayer().getEmail());
+        pago.setUpdatedAt(LocalDateTime.now());
+        pago.setRawNotificationJson(rawJson);
+
+        if ("approved".equalsIgnoreCase(payment.getStatus())) {
+            pago.setDateApproved(LocalDateTime.now());
+            //actualizarOrden(orderId, "CONFIRMADA");
+        }
+
+        if ("rejected".equalsIgnoreCase(payment.getStatus())) {
+            actualizarOrden(orderId, "RECHAZADA");
+        }
+
+        pagoRepo.save(pago);
+    }
+
+
+    private void actualizarOrden(String orderId, String nuevoEstado) {
+        ordenRepo.findById(Long.parseLong(orderId))
+                .ifPresent(orden -> {
+                    orden.setEstado(nuevoEstado);
+                    ordenRepo.save(orden);
+                });
+    }
+
+
     @Override
     public PagoStatusResponse getStatusByOrderId(String orderId) {
-        PagoEntity p = pagoRepo.findByOrderId(orderId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(NOT_FOUND, "Pago no encontrado para orderId: " + orderId)
-                );
+        PagoEntity pago = pagoRepo.findByOrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Pago no encontrado"));
 
         return new PagoStatusResponse(
-                p.getOrderId(),
-                p.getPreferenceId(),
-                p.getPaymentId(),
-                p.getStatus(),
-                p.getStatusDetail()
+                pago.getOrderId(),
+                pago.getPreferenceId(),
+                pago.getPaymentId(),
+                pago.getStatus(),
+                pago.getStatusDetail(),
+                pago.getPaymentMethod(),
+                pago.getAmount()
         );
     }
 }
+

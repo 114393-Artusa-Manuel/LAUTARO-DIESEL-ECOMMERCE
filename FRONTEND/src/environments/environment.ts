@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   backendBaseUrl: 'http://localhost:8080',
-  mpPublicKey: 'TEST-PUBLIC-KEY-TUYA' // reemplazá con la tuya de Mercado Pago
+  mpPublicKey: 'APP_USR-f1b9cae7-0a7e-41ce-9e47-5b716a2a343c'
 };
 export const environment1 = {
   production: false,

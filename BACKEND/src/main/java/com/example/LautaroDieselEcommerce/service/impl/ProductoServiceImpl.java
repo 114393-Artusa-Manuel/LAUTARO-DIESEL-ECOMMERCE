@@ -162,8 +162,7 @@ public class ProductoServiceImpl implements ProductoService {
                                     return ie;
                                 })
                                 .collect(Collectors.toList());
-                        // Do not replace the collection instance (Hibernate + orphanRemoval expects the same collection instance).
-                        // Clear and addAll to keep the same list reference managed by JPA.
+                        
                         producto.getImagenes().clear();
                         producto.getImagenes().addAll(imgs);
                     }

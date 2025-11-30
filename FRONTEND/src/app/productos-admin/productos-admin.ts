@@ -348,13 +348,35 @@ export class ProductosAdmin implements OnInit {
   }
 
   saveImageEdit(img: any) {
-    const id = img.idImagen ?? img.id;
-    if (!id) {
-      this.message = 'ID de imagen no disponible';
+    // Persist image edits by updating the whole product via PUT /api/productos/{id}
+    const pid = this.editModel?.idProducto ?? this.editModel?.id;
+    if (!pid) {
+      this.message = 'ID de producto no disponible';
       return;
     }
-    const payload = { url: img.url, textoAlt: img.textoAlt, orden: img.orden ?? 0 };
-    this.http.put(`http://localhost:8080/api/imagenes-producto/${id}`, payload).subscribe({
+
+    // Build payload mirroring saveEdit() so backend doesn't overwrite other fields unintentionally
+    const payload: any = {
+      nombre: (this.editModel.nombre || '').toString().trim(),
+      slug: (this.editModel.slug || '').toString().trim() || `producto-${Date.now()}`,
+      descripcion: (this.editModel.descripcion || '').toString().trim(),
+      activo: !!this.editModel.activo,
+      marcasIds: this.normalizeIdsField(this.editModel.marcasIds).ids,
+      categoriasIds: this.normalizeIdsField(this.editModel.categoriasIds).ids,
+      precio: this.editModel.precio != null ? Number(this.editModel.precio) : null,
+      moneda: this.editModel.moneda ? this.editModel.moneda.toString().trim() : null,
+      varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null,
+      stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0,
+      descuento: this.editModel.descuento != null ? Number(this.editModel.descuento) : 0
+    };
+
+    // Attach the imagenes array including the edited image
+    if (this.editModel.imagenes && Array.isArray(this.editModel.imagenes)) {
+      payload.imagenes = this.editModel.imagenes.map((i:any) => ({ idImagen: i.idImagen, url: i.url, textoAlt: i.textoAlt, orden: i.orden }));
+      payload.img = (this.editModel.imagenes[0] && this.editModel.imagenes[0].url) ? this.editModel.imagenes[0].url : undefined;
+    }
+
+    this.productoService.update(pid, payload).subscribe({
       next: (res:any) => {
         this.message = 'Imagen actualizada';
         img._editing = false;
@@ -362,7 +384,7 @@ export class ProductosAdmin implements OnInit {
         this.loadProducts();
       },
       error: (e:any) => {
-        console.error('Error actualizando imagen', e);
+        console.error('Error actualizando imagen via producto update', e);
         this.message = `Error actualizando imagen: ${e?.error?.mensaje ?? e?.message ?? e}`;
       }
     });
@@ -380,20 +402,44 @@ export class ProductosAdmin implements OnInit {
 
   deleteImage(img: any) {
     const id = img.idImagen ?? img.id;
+    // If image has no id, just remove locally
     if (!id) {
-      // just remove from local array
       this.editModel.imagenes = (this.editModel.imagenes || []).filter((x:any) => x !== img);
+      this.message = 'Imagen eliminada localmente. Guardá el producto para persistir cambios.';
       return;
     }
     if (!confirm('Eliminar imagen?')) return;
-    this.http.delete(`http://localhost:8080/api/imagenes-producto/${id}`).subscribe({
-      next: () => {
+
+    // Build payload similar to saveEdit but with the image removed
+    const pid = this.editModel?.idProducto ?? this.editModel?.id;
+    if (!pid) { this.message = 'ID de producto no disponible'; return; }
+
+    const remaining = (this.editModel.imagenes || []).filter((x:any) => (x.idImagen ?? x.id) !== id).map((i:any) => ({ idImagen: i.idImagen, url: i.url, textoAlt: i.textoAlt, orden: i.orden }));
+
+    const payload: any = {
+      nombre: (this.editModel.nombre || '').toString().trim(),
+      slug: (this.editModel.slug || '').toString().trim() || `producto-${Date.now()}`,
+      descripcion: (this.editModel.descripcion || '').toString().trim(),
+      activo: !!this.editModel.activo,
+      marcasIds: this.normalizeIdsField(this.editModel.marcasIds).ids,
+      categoriasIds: this.normalizeIdsField(this.editModel.categoriasIds).ids,
+      precio: this.editModel.precio != null ? Number(this.editModel.precio) : null,
+      moneda: this.editModel.moneda ? this.editModel.moneda.toString().trim() : null,
+      varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null,
+      stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0,
+      descuento: this.editModel.descuento != null ? Number(this.editModel.descuento) : 0,
+      imagenes: remaining
+    };
+
+    this.productoService.update(pid, payload).subscribe({
+      next: (res:any) => {
         this.message = 'Imagen eliminada';
-        this.editModel.imagenes = (this.editModel.imagenes || []).filter((x:any) => (x.idImagen ?? x.id) !== id);
+        // update local model
+        this.editModel.imagenes = remaining;
         this.loadProducts();
       },
       error: (e:any) => {
-        console.error('Error eliminando imagen', e);
+        console.error('Error eliminando imagen via producto update', e);
         this.message = `Error eliminando imagen: ${e?.error?.mensaje ?? e?.message ?? e}`;
       }
     });
@@ -405,31 +451,46 @@ export class ProductosAdmin implements OnInit {
     const pid = this.editModel?.idProducto ?? this.editModel?.id;
     const normalized = this.normalizeImageUrl(url);
 
-    // If product has an id on the server, persist immediately via the imagenes endpoint
+    // If there's a product id, update the product with the new imagenes array
     if (pid) {
-      const payload = { idProducto: pid, url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim(), orden: 0 };
-      this.http.post((environment?.backendBaseUrl || 'http://localhost:8080') + '/api/imagenes-producto', payload).subscribe({
+      const existing = (this.editModel.imagenes || []).map((i:any) => ({ idImagen: i.idImagen, url: i.url, textoAlt: i.textoAlt, orden: i.orden }));
+      existing.push({ url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim(), orden: 0 });
+
+      const payload: any = {
+        nombre: (this.editModel.nombre || '').toString().trim(),
+        slug: (this.editModel.slug || '').toString().trim() || `producto-${Date.now()}`,
+        descripcion: (this.editModel.descripcion || '').toString().trim(),
+        activo: !!this.editModel.activo,
+        marcasIds: this.normalizeIdsField(this.editModel.marcasIds).ids,
+        categoriasIds: this.normalizeIdsField(this.editModel.categoriasIds).ids,
+        precio: this.editModel.precio != null ? Number(this.editModel.precio) : null,
+        moneda: this.editModel.moneda ? this.editModel.moneda.toString().trim() : null,
+        varianteActiva: this.editModel.varianteActiva != null ? !!this.editModel.varianteActiva : null,
+        stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0,
+        descuento: this.editModel.descuento != null ? Number(this.editModel.descuento) : 0,
+        imagenes: existing
+      };
+
+      this.productoService.update(pid, payload).subscribe({
         next: (res:any) => {
-          const created = res?.data ?? res ?? null;
-          const imgObj = created && (created.idImagen || created.id) ? created : { url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim() };
-          this.editModel.imagenes = this.editModel.imagenes || [];
-          this.editModel.imagenes.push(imgObj);
+          // reflect server state locally
+          this.editModel.imagenes = existing;
           this.message = 'Imagen agregada';
           this.newImageUrl = '';
           this.newImageAlt = '';
           this.loadProducts();
         },
         error: (e:any) => {
-          console.error('Error agregando imagen', e);
+          console.error('Error agregando imagen via producto update', e);
           this.message = `Error agregando imagen: ${e?.error?.mensaje ?? e?.message ?? e}`;
         }
       });
       return;
     }
 
-    // If no product id (e.g. local edit before save), add image locally so user can save it later
+    // No pid: add locally and tell user to save product
     this.editModel.imagenes = this.editModel.imagenes || [];
-    this.editModel.imagenes.push({ url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim() });
+    this.editModel.imagenes.push({ url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim(), orden: 0 });
     this.message = 'Imagen agregada localmente. Guardá el producto para persistirla.';
     this.newImageUrl = '';
     this.newImageAlt = '';

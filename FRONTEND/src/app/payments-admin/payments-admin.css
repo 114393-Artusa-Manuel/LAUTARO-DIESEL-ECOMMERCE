@@ -1,0 +1,20 @@
+.status-badge{
+  display:inline-block;
+  padding: .35em .6em;
+  border-radius: .375rem;
+  color:#fff;
+  font-size:.75rem;
+  font-weight:500;
+}
+
+/* estados */
+.status-approved{background:#2ecc71;}
+.status-rejected{background:#e74c3c;}
+/* pending y created en verde también */
+.status-pending{background:#27ae60;}
+.status-created{background:#7f8c8d;} /* gris para created, si lo usás */
+
+/* small responsive adjustments */
+@media (max-width:768px){
+  canvas#paymentsChart{height:160px!important}
+}

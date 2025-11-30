@@ -64,7 +64,8 @@ export class ProductosAdmin implements OnInit {
     stock: 0,
     descuento: 0,
     moneda: 'ARS',
-    varianteActiva: true
+    varianteActiva: true,
+    imagenUrl: ''
   };
 
   loading = false;
@@ -84,26 +85,54 @@ export class ProductosAdmin implements OnInit {
     }
 
     const slug = (this.model.slug || '').toString().trim() || `producto-${Date.now()}`;
-    const payload = {
+    const payload: any = {
       nombre: (this.model.nombre || '').toString().trim(),
       slug,
       descripcion: (this.model.descripcion || '').toString().trim(),
       activo: !!this.model.activo,
       marcasIds: normMarcas.ids,
-      categoriasIds: normCategorias.ids
-      ,precio: this.model.precio != null ? Number(this.model.precio) : null
-      ,moneda: this.model.moneda ? this.model.moneda.toString().trim() : null
-      ,varianteActiva: this.model.varianteActiva != null ? !!this.model.varianteActiva : null
-      ,stock: this.model.stock != null ? Number(this.model.stock) : 0
-      ,descuento: this.model.descuento != null ? Number(this.model.descuento) : 0
+      categoriasIds: normCategorias.ids,
+      precio: this.model.precio != null ? Number(this.model.precio) : null,
+      moneda: this.model.moneda ? this.model.moneda.toString().trim() : null,
+      varianteActiva: this.model.varianteActiva != null ? !!this.model.varianteActiva : null,
+      stock: this.model.stock != null ? Number(this.model.stock) : 0,
+      descuento: this.model.descuento != null ? Number(this.model.descuento) : 0
     };
+
+    // If the admin provided an imagenUrl, attach it to the payload (backend may or may not persist it).
+    const rawUrl = (this.model.imagenUrl || '').toString().trim();
+    if (rawUrl) {
+      const normalized = this.normalizeImageUrl(rawUrl);
+      payload.imagenes = [{ url: normalized, textoAlt: this.model.nombre || '' }];
+      // keep legacy single-image field for older backends
+      payload.img = normalized;
+    }
     this.loading = true;
     this.productoService.create(payload).subscribe({
       next: (res: any) => {
         this.loading = false;
         this.message = res?.mensaje ?? 'Producto creado';
+        // try to extract created product id from common response shapes
+        const created = res?.data ?? res ?? null;
+        const createdId = created?.idProducto ?? created?.id ?? created?.codigo ?? null;
+
+        // If we attached an imagenUrl to the payload, and the backend returned an id, try to persist the image
+        if (rawUrl && createdId) {
+          const normalized = this.normalizeImageUrl(rawUrl);
+          const imgPayload: any = { idProducto: createdId, url: normalized, textoAlt: this.model.nombre || '', orden: 0 };
+          this.http.post((environment?.backendBaseUrl || 'http://localhost:8080') + '/api/imagenes-producto', imgPayload).subscribe({
+            next: (r:any) => {
+              // no-op; we already updated UI below
+            },
+            error: (e:any) => {
+              console.warn('No se pudo persistir imagen automáticamente', e);
+              // keep going — product created but image persistence failed
+            }
+          });
+        }
+
         // reset form
-        this.model = { nombre: '', slug: '', descripcion: '', activo: true, marcasIds: [], categoriasIds: [], precio: null, moneda: 'ARS', varianteActiva: true, stock: 0, descuento: 0 };
+        this.model = { nombre: '', slug: '', descripcion: '', activo: true, marcasIds: [], categoriasIds: [], precio: null, moneda: 'ARS', varianteActiva: true, stock: 0, descuento: 0, imagenUrl: '' };
         // refresh product list in-place for faster UX
         this.loadProducts();
         // close create form
@@ -301,17 +330,116 @@ export class ProductosAdmin implements OnInit {
     this.editModel = { ...product };
     this.editModel.marcasIds = this.normalizeIdsField(marcasSource).ids;
     this.editModel.categoriasIds = this.normalizeIdsField(categoriasSource).ids;
+    // ensure imagenes is an array we can edit in UI
+    this.editModel.imagenes = Array.isArray(this.editModel.imagenes) ? this.editModel.imagenes.map((img:any)=> ({ ...img })) : [];
   }
 
   cancelEdit() {
     this.editModel = null;
   }
 
+  // --- Image management for edit panel ---
+  newImageUrl = '';
+  newImageAlt = '';
+
+  startEditImage(img: any) {
+    img._editing = true;
+    img._backup = { url: img.url, textoAlt: img.textoAlt, orden: img.orden };
+  }
+
+  saveImageEdit(img: any) {
+    const id = img.idImagen ?? img.id;
+    if (!id) {
+      this.message = 'ID de imagen no disponible';
+      return;
+    }
+    const payload = { url: img.url, textoAlt: img.textoAlt, orden: img.orden ?? 0 };
+    this.http.put(`http://localhost:8080/api/imagenes-producto/${id}`, payload).subscribe({
+      next: (res:any) => {
+        this.message = 'Imagen actualizada';
+        img._editing = false;
+        delete img._backup;
+        this.loadProducts();
+      },
+      error: (e:any) => {
+        console.error('Error actualizando imagen', e);
+        this.message = `Error actualizando imagen: ${e?.error?.mensaje ?? e?.message ?? e}`;
+      }
+    });
+  }
+
+  cancelEditImage(img: any) {
+    if (img._backup) {
+      img.url = img._backup.url;
+      img.textoAlt = img._backup.textoAlt;
+      img.orden = img._backup.orden;
+    }
+    img._editing = false;
+    delete img._backup;
+  }
+
+  deleteImage(img: any) {
+    const id = img.idImagen ?? img.id;
+    if (!id) {
+      // just remove from local array
+      this.editModel.imagenes = (this.editModel.imagenes || []).filter((x:any) => x !== img);
+      return;
+    }
+    if (!confirm('Eliminar imagen?')) return;
+    this.http.delete(`http://localhost:8080/api/imagenes-producto/${id}`).subscribe({
+      next: () => {
+        this.message = 'Imagen eliminada';
+        this.editModel.imagenes = (this.editModel.imagenes || []).filter((x:any) => (x.idImagen ?? x.id) !== id);
+        this.loadProducts();
+      },
+      error: (e:any) => {
+        console.error('Error eliminando imagen', e);
+        this.message = `Error eliminando imagen: ${e?.error?.mensaje ?? e?.message ?? e}`;
+      }
+    });
+  }
+
+  addImageToEditModel() {
+    const url = (this.newImageUrl || '').toString().trim();
+    if (!url) { this.message = 'Ingresá URL de la imagen'; return; }
+    const pid = this.editModel?.idProducto ?? this.editModel?.id;
+    const normalized = this.normalizeImageUrl(url);
+
+    // If product has an id on the server, persist immediately via the imagenes endpoint
+    if (pid) {
+      const payload = { idProducto: pid, url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim(), orden: 0 };
+      this.http.post((environment?.backendBaseUrl || 'http://localhost:8080') + '/api/imagenes-producto', payload).subscribe({
+        next: (res:any) => {
+          const created = res?.data ?? res ?? null;
+          const imgObj = created && (created.idImagen || created.id) ? created : { url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim() };
+          this.editModel.imagenes = this.editModel.imagenes || [];
+          this.editModel.imagenes.push(imgObj);
+          this.message = 'Imagen agregada';
+          this.newImageUrl = '';
+          this.newImageAlt = '';
+          this.loadProducts();
+        },
+        error: (e:any) => {
+          console.error('Error agregando imagen', e);
+          this.message = `Error agregando imagen: ${e?.error?.mensaje ?? e?.message ?? e}`;
+        }
+      });
+      return;
+    }
+
+    // If no product id (e.g. local edit before save), add image locally so user can save it later
+    this.editModel.imagenes = this.editModel.imagenes || [];
+    this.editModel.imagenes.push({ url: normalized, textoAlt: (this.newImageAlt || this.editModel?.nombre || '').toString().trim() });
+    this.message = 'Imagen agregada localmente. Guardá el producto para persistirla.';
+    this.newImageUrl = '';
+    this.newImageAlt = '';
+  }
+
   saveEdit() {
     if (!this.editModel) return;
     const id = this.editModel.idProducto ?? this.editModel.id;
     if (!id) return;
-    const payload = {
+    const payload: any = {
       nombre: (this.editModel.nombre || '').toString().trim(),
       slug: (this.editModel.slug || '').toString().trim() || `producto-${Date.now()}`,
       descripcion: (this.editModel.descripcion || '').toString().trim(),
@@ -324,6 +452,13 @@ export class ProductosAdmin implements OnInit {
       stock: this.editModel.stock != null ? Number(this.editModel.stock) : 0,
       descuento: this.editModel.descuento != null ? Number(this.editModel.descuento) : 0 
     };
+    // Include imagenes if present so backends that accept DTO.imagenes can persist them
+    if (this.editModel.imagenes && Array.isArray(this.editModel.imagenes) && this.editModel.imagenes.length) {
+      // map to minimal image DTOs
+      payload.imagenes = this.editModel.imagenes.map((i:any) => ({ url: i.url, textoAlt: i.textoAlt, orden: i.orden }));
+      // legacy single-image field
+      payload.img = (this.editModel.imagenes[0] && this.editModel.imagenes[0].url) ? this.editModel.imagenes[0].url : payload.img;
+    }
     this.loading = true;
     this.productoService.update(id, payload).subscribe({
       next: (res: any) => {
@@ -614,7 +749,25 @@ export class ProductosAdmin implements OnInit {
   }
 
   //carga n8n 
-   loadingRecarga = false;
+  /**
+   * Normalize common image URL shapes (e.g. Google Drive share links) into direct-access URLs.
+   */
+  normalizeImageUrl(url: string): string {
+    if (!url) return url;
+    const s = url.toString().trim();
+    // drive file share: /file/d/ID/
+    const m = s.match(/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m && m[1]) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+    // drive id param: ?id=ID or &id=ID
+    const m2 = s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2 && m2[1]) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+    // open?id=ID
+    const m3 = s.match(/open\?id=([a-zA-Z0-9_-]+)/);
+    if (m3 && m3[1]) return `https://drive.google.com/uc?export=view&id=${m3[1]}`;
+    return s;
+  }
+
+  loadingRecarga = false;
   recargaMsg = '';
 
   dispararRecargaN8n() {

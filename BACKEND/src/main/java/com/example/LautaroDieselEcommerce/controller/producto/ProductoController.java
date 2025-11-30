@@ -2,7 +2,6 @@ package com.example.LautaroDieselEcommerce.controller.producto;
 
 import com.example.LautaroDieselEcommerce.dto.producto.ProductoDto;
 import com.example.LautaroDieselEcommerce.dto.usuario.BaseResponse;
-import com.example.LautaroDieselEcommerce.entity.producto.ProductoEntity;
 import com.example.LautaroDieselEcommerce.service.ProductoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +21,11 @@ public class ProductoController {
     private ProductoService productoService;
 
     @GetMapping("/filtrar")
-    public ResponseEntity<BaseResponse<List<ProductoEntity>>> filtrarProductos(
+    public ResponseEntity<BaseResponse<List<ProductoDto>>> filtrarProductos(
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) Long marcaId,
             @RequestParam(required = false) String nombre) {
-        BaseResponse<List<ProductoEntity>> response = productoService.filtrarProductos(categoriaId, marcaId, nombre);
+        BaseResponse<List<ProductoDto>> response = productoService.filtrarProductos(categoriaId, marcaId, nombre);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

@@ -5,12 +5,14 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 
 @Entity
 @Table(name = "ImagenProducto")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ImagenProductoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

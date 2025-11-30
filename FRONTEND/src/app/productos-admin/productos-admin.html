@@ -96,6 +96,36 @@
         ></textarea>
       </div>
 
+      <!-- IMÁGENES -->
+      <div class="mb-3">
+        <label class="form-label">Imágenes</label>
+        <div *ngIf="!(editModel.imagenes?.length)" class="small text-muted mb-2">No hay imágenes</div>
+        <div class="d-flex gap-2 flex-wrap mb-2">
+          <div *ngFor="let img of editModel.imagenes" class="text-center" style="width:140px;">
+            <img [src]="img.url" style="width:120px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e9e9e9" />
+            <div class="small mt-1">{{ img.textoAlt }}</div>
+            <div class="d-flex gap-1 justify-content-center mt-1">
+              <button class="btn btn-sm btn-outline-primary" type="button" (click)="startEditImage(img)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteImage(img)">Eliminar</button>
+            </div>
+            <div *ngIf="img._editing" class="mt-2">
+              <input class="form-control form-control-sm mb-1" [(ngModel)]="img.url" name="imgUrl{{img.idImagen}}" />
+              <input class="form-control form-control-sm mb-1" [(ngModel)]="img.textoAlt" name="imgAlt{{img.idImagen}}" />
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-primary" type="button" (click)="saveImageEdit(img)">Guardar</button>
+                <button class="btn btn-sm btn-secondary" type="button" (click)="cancelEditImage(img)">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <input class="form-control form-control-sm mb-1" placeholder="Nueva imagen URL" [(ngModel)]="newImageUrl" name="newImageUrl" />
+          <input class="form-control form-control-sm mb-1" placeholder="Texto alt" [(ngModel)]="newImageAlt" name="newImageAlt" />
+          <button class="btn btn-sm btn-success" type="button" (click)="addImageToEditModel()">Agregar imagen</button>
+        </div>
+      </div>
+
       <div class="mb-3">
         <label class="form-label">Precio</label>
         <input
@@ -172,6 +202,18 @@
           [(ngModel)]="model.descripcion"
           name="descripcion"
         ></textarea>
+      </div>
+
+      <!-- Campo para URL de imagen (nuevo) -->
+      <div class="mb-3">
+        <label class="form-label">URL de imagen (opcional)</label>
+        <input class="form-control" [(ngModel)]="model.imagenUrl" name="imagenUrl" placeholder="https://..." />
+        <div *ngIf="model.imagenUrl" class="mt-2 d-flex align-items-center gap-3">
+          <div style="width:160px;height:100px;border:1px solid #eee;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:6px;background:#fafafa">
+            <img [src]="normalizeImageUrl(model.imagenUrl)" alt="preview" style="max-width:100%;max-height:100%;object-fit:cover" />
+          </div>
+          <div class="small text-muted">Pega la URL pública de la imagen. Se intentará persistirla automáticamente tras crear el producto.</div>
+        </div>
       </div>
 
       <div class="mb-3 form-check">

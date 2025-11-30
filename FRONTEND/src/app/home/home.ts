@@ -193,9 +193,22 @@ export class Home {
 
   getImg(p: any): string {
     if (!p) return 'assets/no-image.png';
-    return (
-      p?.img || p?.image || p?.imagen || p?.imagenes?.[0] || p?.images?.[0] || 'assets/no-image.png'
-    );
+    // Prefer simple string fields
+    const candidates = [p?.img, p?.image, p?.imagen];
+    for (const c of candidates) {
+      if (c && typeof c === 'string') return c;
+    }
+
+    // Arrays: imagenes or images may contain strings or objects with url/src
+    const arr = p?.imagenes ?? p?.images ?? null;
+    if (Array.isArray(arr) && arr.length > 0) {
+      const first = arr[0];
+      if (!first) return 'assets/no-image.png';
+      if (typeof first === 'string') return first;
+      if (typeof first === 'object') return first.url ?? first.src ?? first.path ?? 'assets/no-image.png';
+    }
+
+    return 'assets/no-image.png';
   }
 
   getPrice(p: any): number {

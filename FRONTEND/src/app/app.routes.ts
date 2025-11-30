@@ -8,6 +8,7 @@ import { PanelAdmin } from './panel-admin/panel-admin';
 import { ProductosAdmin } from './productos-admin/productos-admin';
 import { PaymentsAdmin } from './payments-admin/payments-admin';
 import { AdminDashboard } from './admin-dashboard/admin-dashboard';
+import { TopItemsReport } from './reports/top-items-report';
 import { PasswordRecovery } from './password-recovery/password-recovery';
 import { Productos } from './productos/productos';
 import { ProductoDetalle } from './producto-detalle/producto-detalle';
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'admin', component: AdminDashboard, canActivate: [AuthGuard] },
   { path: 'admin/productos', component: ProductosAdmin, canActivate: [AuthGuard] },
   { path: 'admin/pagos', component: PaymentsAdmin, canActivate: [AuthGuard] },
+  { path: 'admin/top-items', component: TopItemsReport, canActivate: [AuthGuard] },
   { path: 'checkout', component: CheckoutComponent },
   { path: 'checkout/success', component: SuccessComponent },
   { path: 'checkout/failure', component: FailureComponent },

@@ -1,0 +1,174 @@
+<div class="container py-4">
+  <h3>Carrito</h3>
+
+  <ng-container *ngIf="items$ | async as items; else loading">
+    <!-- 🔹 Carrito vacío -->
+    <div *ngIf="items.length === 0" class="alert alert-info">Tu carrito está vacío.</div>
+
+    <!-- 🔹 Carrito con productos -->
+    <ng-container *ngIf="items.length > 0">
+      <!-- 🧱 Listado de productos -->
+      <div class="list-group mb-3">
+        <div
+          *ngFor="let it of items; trackBy: trackByProduct"
+          class="list-group-item d-flex align-items-center gap-3"
+        >
+          <!-- Imagen -->
+          <div
+            style="
+              width: 72px;
+              height: 72px;
+              background: #f5f5f5;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 6px;
+              overflow: hidden;
+              position: relative;
+            "
+          >
+            <img
+              *ngIf="it.product?.imagenes && it.product.imagenes.length > 0"
+              [src]="it.product.imagenes[0].url"
+              [alt]="it.product.imagenes[0].textoAlt || it.product.nombre"
+              style="width: 100%; height: 100%; object-fit: cover"
+            />
+            <span
+              *ngIf="!it.product?.imagenes || it.product.imagenes.length === 0"
+              class="text-muted small"
+              >Img</span
+            >
+
+            <!-- 🔸 Badge descuento -->
+            <span
+              *ngIf="
+                (it.discount && it.discount > 0) ||
+                (it.product?.descuento && it.product.descuento > 0)
+              "
+              class="badge bg-danger position-absolute top-0 start-0 m-1"
+            >
+              -{{ it.discount || it.product?.descuento }}%
+            </span>
+          </div>
+
+          <!-- Detalle -->
+          <div class="flex-grow-1">
+            <div class="fw-bold">{{ it.product?.nombre }}</div>
+            <div class="text-muted small">
+              {{
+                it.product?.descripcion
+                  ? (it.product.descripcion | slice : 0 : 80) +
+                    (it.product.descripcion.length > 80 ? '...' : '')
+                  : ''
+              }}
+            </div>
+
+            <div class="mt-2">
+              <span class="text-muted small">Precio unitario:</span>
+              <div>
+                <!-- Precio original tachado -->
+                <strong
+                  *ngIf="
+                    (it.discount || it.product?.descuento) &&
+                    (it.discount || it.product?.descuento) > 0
+                  "
+                  class="text-decoration-line-through text-muted me-1"
+                >
+                  ${{ it.product?.precio ?? 0 | number : '1.2-2' }}
+                </strong>
+                <!-- Precio con descuento final -->
+                <strong class="text-success">
+                  ${{
+                    it.finalPrice ??
+                      (it.product?.precio ?? 0) * (1 - (it.product?.descuento ?? 0) / 100)
+                      | number : '1.2-2'
+                  }}
+                  {{ it.product?.moneda || '' }}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cantidad -->
+          <div style="min-width: 140px; text-align: right">
+            <div class="input-group mb-2">
+              <button
+                class="btn btn-outline-secondary"
+                (click)="update(getProdId(it), (it.quantity || 1) - 1)"
+              >
+                -
+              </button>
+
+              <input
+                class="form-control text-center"
+                style="width: 60px"
+                type="number"
+                [value]="it.quantity || 1"
+                (change)="update(getProdId(it), toNumber($event))"
+              />
+
+              <button
+                class="btn btn-outline-secondary"
+                (click)="update(getProdId(it), (it.quantity || 1) + 1)"
+              >
+                +
+              </button>
+            </div>
+
+            <div class="text-end">
+              <div class="small text-muted">Subtotal</div>
+              <div class="fw-bold">
+                ${{
+                  (it.finalPrice ?? (it.product?.precio ?? 0)) * (it.quantity || 1)
+                    | number : '1.2-2'
+                }}
+                {{ it.product?.moneda || '' }}
+              </div>
+              <button class="btn btn-link btn-sm text-danger" (click)="remove(getProdId(it))">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🧾 Resumen de compra -->
+      <div class="card mt-4 p-3 shadow-sm">
+        <h5 class="mb-3">Resumen de compra</h5>
+        <div class="d-flex justify-content-between">
+          <span>Subtotal:</span>
+          <strong>${{ cart.subtotal$ | async | number : '1.2-2' }} ARS</strong>
+        </div>
+        <div class="d-flex justify-content-between text-danger">
+          <span>Descuento:</span>
+          <strong>-${{ cart.discount$ | async | number : '1.2-2' }} ARS</strong>
+        </div>
+        <hr />
+        <div class="d-flex justify-content-between fs-5 mb-3">
+          <span>Total:</span>
+          <strong>${{ cart.total$ | async | number : '1.2-2' }} ARS</strong>
+        </div>
+
+        <!-- ✅ Confirmar compra -->
+        <button
+          *ngIf="items.length > 0"
+          class="btn btn-success w-100"
+          (click)="confirmarCompra()"
+          [disabled]="isProcessing || compraConfirmada"
+        >
+          {{ compraConfirmada ? 'Compra realizada' : 'Confirmar compra' }}
+        </button>
+      </div>
+
+      <!-- 🔸 Acciones -->
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <button class="btn btn-outline-danger" (click)="clear()">Vaciar carrito</button>
+        <button class="btn btn-primary" (click)="irAPagar(items)">Ir a pagar</button>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="text-muted">Cargando carrito...</div>
+  </ng-template>
+</div>

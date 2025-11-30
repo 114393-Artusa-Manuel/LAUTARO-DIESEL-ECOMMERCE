@@ -1,0 +1,99 @@
+<div class="container py-4">
+  <h2 class="mb-3">Admin Dashboard</h2>
+
+  <div class="top-items-widget mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <h5 class="m-0">Top 3 Items (últimos 30 días)</h5>
+      <a class="small" routerLink="/admin/top-items">Ver reporte completo →</a>
+    </div>
+    <div class="top-items-list d-flex gap-3">
+      <div *ngIf="loadingTop" class="text-muted">Cargando top items…</div>
+      <div *ngIf="!loadingTop && topError" class="text-danger small">{{ topError }}</div>
+      <div *ngIf="!loadingTop && (!topItems || topItems.length === 0) && !topError" class="text-muted">No hay datos</div>
+      <a class="top-item" *ngFor="let it of topItems" [routerLink]="['/productos', it.idProducto ?? it['idProducto'] ?? it['id']]" (click)="goToProduct(it.idProducto ?? it['idProducto'] ?? it['id'])">
+        <div class="thumb">
+          <img *ngIf="it.imagenUrl || it.imagen || it.imageUrl" [src]="it.imagenUrl ?? it.imagen ?? it.imageUrl" alt="{{ it.nombre || it.titulo }}" />
+          <div *ngIf="!(it.imagenUrl || it.imagen || it.imageUrl)" class="thumb-placeholder"></div>
+        </div>
+        <div class="meta">
+          <div class="title">{{ it.nombre ?? it.titulo ?? it.nombreProducto ?? it.title }}</div>
+          <div class="small text-muted">Vendidos: <strong>{{ (it.cantidadVendida ?? it.cantidad ?? it.qty ?? it.totalCantidad ?? 0) | number:'1.0-0' }}</strong></div>
+          <div class="small text-muted">Total: <strong>{{ totalOf(it) | number:'1.0-2' }}</strong></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="admin-grid">
+    <a class="admin-card" routerLink="/panel-admin">
+      <div class="card-media" aria-hidden="true">
+        <!-- simple gauge icon -->
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3a9 9 0 100 18 9 9 0 000-18zm0 2a7 7 0 11-7 7" stroke="#4b5563" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 12l3-2" stroke="#0f766e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h5>Panel General</h5>
+        <p class="small text-muted">Resumen y accesos rápidos</p>
+      </div>
+    </a>
+
+    <a class="admin-card" routerLink="/admin/top-items">
+      <div class="card-media" aria-hidden="true">
+        <!-- trophy / top items icon -->
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 21h8" stroke="#374151" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M12 3l1.2 4H18l-3.2 2.4L16 14l-4-2.8L8 14l1.2-4.6L6 7h4.8L12 3z" stroke="#0f766e" stroke-width="1.2" fill="#e6fffa"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h5>Top Items</h5>
+        <p class="small text-muted">Ver los productos más vendidos en un rango</p>
+      </div>
+    </a>
+
+    <a class="admin-card" routerLink="/admin/productos">
+      <div class="card-media" aria-hidden="true">
+        <!-- box / product icon -->
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 16V8a1 1 0 00-.553-.894l-8-4a1 1 0 00-.894 0l-8 4A1 1 0 003 8v8a1 1 0 00.553.894l8 4a1 1 0 00.894 0l8-4A1 1 0 0021 16z" stroke="#374151" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 3v9" stroke="#0f766e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h5>Productos (Admin)</h5>
+        <p class="small text-muted">Crear / editar / eliminar productos e imágenes</p>
+      </div>
+    </a>
+
+    <a class="admin-card" routerLink="/admin/pagos">
+      <div class="card-media" aria-hidden="true">
+        <!-- credit card icon -->
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="5" width="20" height="14" rx="2" stroke="#374151" stroke-width="1.2"/>
+          <path d="M2 10h20" stroke="#e5e7eb" stroke-width="1.6"/>
+          <rect x="4" y="14" width="6" height="2" rx="0.5" fill="#0f766e"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h5>Pagos (Admin)</h5>
+        <p class="small text-muted">Ver / filtrar pagos y ver items</p>
+      </div>
+    </a>
+
+    <a class="admin-card" routerLink="/panel-admin">
+      <div class="card-media" aria-hidden="true">
+        <!-- users/settings icon -->
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 11a4 4 0 11-8 0 4 4 0 018 0z" stroke="#374151" stroke-width="1.2"/>
+          <path d="M2 20a8 8 0 0116 0" stroke="#0f766e" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h5>Ajustes / Usuarios</h5>
+        <p class="small text-muted">Configurar permisos, usuarios y ajustes del sistema</p>
+      </div>
+    </a>
+  </div>
+</div>

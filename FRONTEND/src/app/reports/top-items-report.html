@@ -1,0 +1,49 @@
+<div class="container py-4">
+  <h2 class="mb-3">Top Items (Reporte)</h2>
+
+  <div class="filters d-flex gap-2 align-items-center mb-3 flex-wrap">
+    <label class="m-0">Desde: <input class="form-control ms-2" type="date" [(ngModel)]="from" /></label>
+    <label class="m-0">Hasta: <input class="form-control ms-2" type="date" [(ngModel)]="to" /></label>
+    <label class="m-0">Límite: <input class="form-control ms-2" type="number" min="1" [(ngModel)]="limit" style="width:100px" /></label>
+    <button class="btn btn-primary ms-2" (click)="load()" [disabled]="loading">Cargar</button>
+    <div *ngIf="loading" class="ms-2 text-muted">Cargando...</div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!loading && (!items || items.length === 0)" class="text-muted">
+    No se encontraron items en el rango seleccionado.
+  </div>
+
+  <div class="top-items-grid mt-3">
+
+    @for (it of items; track it) {
+      <a class="top-item-card" [routerLink]="['/productos', productIdOf(it)]" (click)="goToProduct(productIdOf(it))">
+
+        <div class="media">
+          <img *ngIf="imageOf(it)" [src]="imageOf(it)" alt="{{ titleOf(it) }}" />
+          <div *ngIf="!imageOf(it)" class="placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="7" width="18" height="12" rx="2"
+                    stroke="#cbd5e1" stroke-width="1.2"/>
+              <path d="M7 11h10" stroke="#e2e8f0" stroke-width="1.2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="info">
+          <h5 class="mb-1">{{ titleOf(it) }}</h5>
+          <div class="small text-muted">Vendidos:
+            <strong>{{ qtyOf(it) | number:'1.0-0' }}</strong>
+          </div>
+          <div class="small text-muted">Total:
+            <strong>{{ totalOf(it) | number:'1.0-2' }}</strong>
+          </div>
+        </div>
+
+      </a>
+    }
+
+  </div>
+</div>

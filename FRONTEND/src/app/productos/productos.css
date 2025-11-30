@@ -1,0 +1,104 @@
+/* === BASE ORIGINAL === */
+.product-card {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #eee;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fff;
+}
+
+.placeholder-img {
+  height: 140px;
+  position: relative; /* necesario para ubicar badges sobre la imagen */
+}
+
+.product-card .card-body {
+  padding: 0.9rem;
+}
+
+.product-card .badge {
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .placeholder-img {
+    height: 100px;
+  }
+}
+
+/* === EFECTOS VISUALES === */
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-card img {
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover img {
+  transform: scale(1.05);
+}
+
+/* === TITULOS Y TEXTOS === */
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.card-text {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* === PRECIO === */
+.card-body strong {
+  font-size: 1rem;
+  color: #198754;
+}
+
+/* === BADGES EN IMAGEN === */
+.badge-overlay {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 10;
+  padding: 0.4em 0.6em;
+  font-size: 0.75rem;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Badge de descuento */
+.badge-discount {
+  background: linear-gradient(135deg, #dc3545, #b02a37);
+}
+
+/* Badge de sin stock */
+.badge-outstock {
+  background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+/* === BOTONES === */
+.btn {
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 767px) {
+  .btn {
+    width: 100%;
+  }
+}

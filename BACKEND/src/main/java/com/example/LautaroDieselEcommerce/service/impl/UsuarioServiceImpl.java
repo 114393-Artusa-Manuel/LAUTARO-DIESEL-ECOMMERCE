@@ -35,11 +35,31 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public BaseResponse<UsuarioDto> crearUsuario(UsuarioCreateDto dto) {
+
         if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             return new BaseResponse<>("El correo ya está registrado", 400, null);
         }
 
-        List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
+        // Lista donde se cargarán los roles
+        List<RolEntity> roles = new ArrayList<>();
+
+        // Si el cliente envía roles, los respetamos
+        if (dto.getRolesIds() != null && !dto.getRolesIds().isEmpty()) {
+            roles = rolRepository.findAllById(dto.getRolesIds());
+
+            if (roles.isEmpty()) {
+                return new BaseResponse<>("Los roles enviados no existen", 400, null);
+            }
+        }
+        else {
+            // Si NO envía roles → asignamos 'particular'
+            RolEntity rolParticular = rolRepository.findByNombreIgnoreCase("particular")
+                    .orElseGet(() -> rolRepository.save(
+                            RolEntity.builder().nombre("particular").build()
+                    ));
+
+            roles.add(rolParticular);
+        }
 
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .correo(dto.getCorreo())
@@ -57,6 +77,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         return new BaseResponse<>("Usuario creado con éxito", 201, mapToDTO(usuario));
     }
 
+
     @Override
     public BaseResponse<UsuarioDto> actualizarUsuario(Long id, UsuarioUpdateDto dto) {
         return usuarioRepository.findById(id)
@@ -70,8 +91,10 @@ public class UsuarioServiceImpl implements UsuarioService {
                     usuario.setSegmento(dto.getSegmento());
                     usuario.setFechaActualizacion(LocalDateTime.now());
 
-                    List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
-                    usuario.setRoles(roles);
+                    if (dto.getRolesIds() != null) {
+                        List<RolEntity> roles = rolRepository.findAllById(dto.getRolesIds());
+                        usuario.setRoles(roles);
+                    }
 
                     usuarioRepository.save(usuario);
                     return new BaseResponse<>("Usuario actualizado", 200, mapToDTO(usuario));

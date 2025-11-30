@@ -1,0 +1,22 @@
+.modal-backdrop{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+  z-index: 1050;
+}
+
+.modal-dialog{
+  max-width: 520px;
+}
+
+.modal-content{
+  background: white;
+  border-radius: 8px;
+}
+
+.table td, .table th{
+  vertical-align: middle;
+}

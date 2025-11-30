@@ -1,0 +1,16 @@
+.container {
+  max-width: 600px;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.border {
+  border: 1px solid #dee2e6 !important;
+}
+
+.border:hover {
+  background-color: #f8f9fa !important;
+}

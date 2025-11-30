@@ -1,0 +1,266 @@
+<div class="container py-4">
+
+    <!-- Título + estado de carga -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h2 class="m-0">Listado de pagos</h2>
+
+        <div class="d-flex align-items-center gap-2">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status"></span>
+            <span *ngIf="loading">Cargando...</span>
+        </div>
+    </div>
+
+    <!-- Mensaje de error/info -->
+    <div *ngIf="message" class="alert alert-warning py-2">
+        {{ message }}
+    </div>
+
+    <!-- Resumen -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-2">
+                    <div class="small text-muted">Total pagos</div>
+                    <div class="fw-bold fs-5">{{ totalPayments }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-2">
+                    <div class="small text-muted">Filtrados</div>
+                    <div class="fw-bold fs-5">{{ filteredPayments }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-2">
+                    <div class="small text-muted">Monto total</div>
+                    <div class="fw-bold">
+                        $ {{ totalAmount | number:'1.0-0' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body py-2">
+                    <div class="small text-muted">Monto filtrado</div>
+                    <div class="fw-bold">
+                        $ {{ filteredAmount | number:'1.0-0' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label mb-1">Buscar</label>
+                    <input type="text" class="form-control" placeholder="Orden, email, estado..." [(ngModel)]="filter"
+                        name="filter" (ngModelChange)="applyFilter()" />
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label mb-1">Estado</label>
+                    <select class="form-select" [(ngModel)]="statusFilter" name="statusFilter" (change)="applyFilter()">
+                        <option value="">Todos</option>
+                        <option value="created">created</option>
+                        <option value="pending">pending</option>
+                        <option value="approved">approved</option>
+                        <option value="rejected">rejected</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label mb-1">Ordenar por</label>
+                    <select class="form-select" [(ngModel)]="sortField" name="sortField" (change)="applyFilter()">
+                        <option value="date">Fecha</option>
+                        <option value="amount">Monto</option>
+                        <option value="status">Estado</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-2">
+                    <label class="form-label mb-1">Dirección</label>
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-outline-secondary" [class.active]="sortDir === 'asc'"
+                            (click)="sortDir = 'asc'; applyFilter()">
+                            Asc
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" [class.active]="sortDir === 'desc'"
+                            (click)="sortDir = 'desc'; applyFilter()">
+                            Desc
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card mb-4">
+        <div class="card-header">Pagos por día</div>
+        <div class="card-body" style="height: 260px;">
+            <canvas id="paymentsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Lista + detalle -->
+    <div class="row g-3">
+        <!-- Tabla -->
+        <div class="col-12 col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Pagos</span>
+                    <span class="small text-muted">
+                        {{ filteredPayments }} resultado{{ filteredPayments === 1 ? '' : 's' }}
+                    </span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle payments-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th class="d-none d-sm-table-cell">Orden</th>
+                                <th>Monto</th>
+                                <th class="status-col text-center">Estado</th>
+                                <th class="d-none d-md-table-cell">Email</th>
+                                <th>Método</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="!filteredPayments && !loading">
+                                <td colspan="6" class="text-center py-3">
+                                    No hay pagos para los filtros seleccionados.
+                                </td>
+                            </tr>
+
+                            <tr *ngFor="let p of payments" (click)="select(p)" style="cursor: pointer;">
+                                <td>{{ formatDate(p) }}</td>
+                                <td class="d-none d-sm-table-cell">
+                                    <!-- últimos 8 caracteres para que no sea tan largo -->
+                                    <span *ngIf="p.orderId as oid">
+                                        {{ oid.length > 8 ? (oid | slice:-8) : oid }}
+                                    </span>
+                                </td>
+                                <td>
+                                    $ {{ getPaymentAmount(p) | number:'1.0-0' }}
+                                    <span class="text-muted small">{{ p.currency || 'ARS' }}</span>
+                                </td>
+                                <td class="status-col text-center">
+                                    <span class="status-badge text-capitalize" [ngClass]="{
+                      'status-approved': getStatus(p) === 'approved',
+                      'status-rejected': getStatus(p) === 'rejected',
+                      'status-pending': getStatus(p) === 'pending' || getStatus(p) === 'created'
+                    }">
+                                        {{ getStatus(p) || '-' }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    {{ p.payerEmail || '-' }}
+                                </td>
+                                <td>
+                                    {{ getMethod(p) || '-' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalle -->
+        <div class="col-12 col-lg-4" *ngIf="selected">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Detalle del pago</span>
+                    <button type="button" class="btn-close" aria-label="Cerrar" (click)="closeDetail()"></button>
+                </div>
+                <div class="card-body small">
+                    <div class="mb-2">
+                        <div class="text-muted">Fecha</div>
+                        <div class="fw-semibold">{{ formatDate(selected) }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="text-muted">Estado</div>
+                        <div>
+                            <span class="status-badge text-capitalize" [ngClass]="{
+                  'status-approved': getStatus(selected) === 'approved',
+                  'status-rejected': getStatus(selected) === 'rejected',
+                  'status-pending': getStatus(selected) === 'pending' || getStatus(selected) === 'created'
+                }">
+                                {{ getStatus(selected) || '-' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="text-muted">Monto</div>
+                        <div class="fw-semibold">
+                            $ {{ getPaymentAmount(selected) | number:'1.0-0' }}
+                            <span class="text-muted">{{ selected.currency || 'ARS' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-2" *ngIf="getItems(selected)?.length">
+                        <div class="text-muted">Ítems comprados</div>
+                        <ul class="list-unstyled mb-0">
+                            <li *ngFor="let it of getItems(selected)" class="d-flex justify-content-between py-1">
+                                <div>
+                                    <strong>{{ it.qty }}x</strong>
+                                    <span class="ms-2">{{ it.name || 'item' }}</span>
+                                </div>
+                                <div class="text-muted">
+                                    ${{ it.price | number:'1.2-2' }}
+                                </div>
+
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-2">
+                        <div class="text-muted">Email del pagador</div>
+                        <div>{{ selected.payerEmail || '-' }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="text-muted">Método de pago</div>
+                        <div>{{ getMethod(selected) || '-' }}</div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-2">
+                        <div class="text-muted">Order ID</div>
+                        <div class="text-break">{{ selected.orderId }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="text-muted">Preference ID</div>
+                        <div class="text-break">{{ selected.preferenceId }}</div>
+                    </div>
+
+                    <div class="mt-3" *ngIf="selected.rawNotificationJson">
+                        <div class="text-muted mb-1">Notificación cruda</div>
+                        <pre class="bg-light p-2 small mb-0">
+{{ selected.rawNotificationJson | json }}
+            </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

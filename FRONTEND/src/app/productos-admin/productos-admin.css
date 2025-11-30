@@ -1,0 +1,29 @@
+
+/* Tiles for marcas / categorias to improve visibility */
+.entity-grid { margin-top: .5rem; display:flex; flex-wrap:wrap; gap:.5rem; }
+.entity-grid .col { padding: 0; }
+.entity-item { border: 1px solid #e6e6e6; border-radius: .5rem; padding: .6rem .5rem; display: flex; align-items: center; justify-content: flex-start; gap: .5rem; min-height: 54px; background: #fff; width:100%; box-sizing: border-box; }
+.entity-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #d0d0d0; }
+.entity-label { display: block; margin: 0; padding: 0 .25rem; font-weight: 600; font-size: 1rem; text-align: left; width: calc(100% - 28px); }
+.entity-item input.form-check-input { transform: scale(1.2); margin-left: .15rem; margin-right: .6rem; accent-color: #0d6efd; }
+
+/* checked style: highlight whole tile rather than relying on sibling selector (more robust) */
+.entity-item.checked { background: rgba(13,110,253,0.06); color: #0d6efd; box-shadow: 0 0 0 0.06rem rgba(13,110,253,0.04); border-color: rgba(13,110,253,0.15); }
+
+/* layout helpers: make columns responsive via flex-basis */
+.entity-grid .col { flex: 1 1 48%; }
+@media (min-width: 768px) {
+	.entity-grid .col { flex: 1 1 32%; }
+}
+@media (max-width: 480px) {
+	.entity-grid { gap: .4rem; }
+	.entity-item { min-height: 44px; padding: .5rem; }
+	.entity-label { font-size: .95rem; }
+	.entity-grid .col { flex: 1 1 100%; }
+}
+
+/* ensure input+label interactions remain accessible */
+.entity-item .form-check-input { cursor: pointer; }
+.entity-item .form-check-label { cursor: pointer; }
+
+

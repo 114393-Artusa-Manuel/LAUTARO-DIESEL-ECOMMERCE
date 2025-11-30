@@ -1,0 +1,152 @@
+.carousel-inner img { max-height: 320px; object-fit: cover; }
+.card-img-top { height: 160px; object-fit: cover; }
+@media (max-width: 576px) { .card-img-top { height: 120px; } }
+.carousel-caption { left: 1rem; right: auto; bottom: 1rem; }
+.btn-outline-secondary.active { background: #e9ecef; }
+.ld-home {
+  .ld-section-title {
+    border-left: 4px solid #dc3545;
+    padding-left: .75rem;
+    text-transform: uppercase;
+    font-size: .95rem;
+    letter-spacing: .08em;
+  }
+
+  .ld-hero {
+    background: radial-gradient(circle at top left, #343a40 0, #000 55%);
+  }
+
+  .ld-product-card img {
+    object-fit: cover;
+    height: 190px;
+  }
+
+  .ld-category-chip {
+    font-size: .85rem;
+  }
+
+  .ld-cta {
+    border: 1px solid #eee;
+  }
+}
+
+/* App-wide home theme: full black background, white text, red accents */
+.app-home {
+  background: #000000;
+  color: #ffffff;
+}
+.app-home .container-fluid { max-width: 100%; }
+.app-home .text-black { color: #ffffff !important; }
+.app-home .text-muted { color: rgba(255,255,255,0.6) !important; }
+.app-home .bg-white { background: transparent !important; }
+.app-home .card { background: transparent; border-color: rgba(255,255,255,0.06); }
+.app-home .border { border-color: rgba(255,255,255,0.06) !important; }
+.app-home .rounded-4, .app-home .rounded-3 { background: transparent; }
+.app-home .btn { border-color: rgba(255,255,255,0.12); }
+.app-home .btn-outline-light { color: #ffffff; border-color: rgba(255,255,255,0.12); }
+.app-home .btn-outline-dark { color: #ffffff; border-color: rgba(255,255,255,0.12); }
+.app-home .btn-outline-danger { color: #e60000; border-color: rgba(230,0,0,0.18); }
+.app-home .btn-danger, .app-home .btn-danger.text-white, .app-home .btn-danger.text-white:focus { background: #e60000; color: #fff; border-color: #b30000; }
+.app-home .text-danger { color: #e60000 !important; }
+.app-home .btn-outline-light.active,
+.app-home .btn-outline-light:active,
+.app-home .btn-outline-light:focus,
+.app-home .btn-outline-light.show {
+  background: #e60000 !important;
+  color: #ffffff !important;
+  border-color: #b30000 !important;
+  box-shadow: 0 6px 18px rgba(230,0,0,0.12);
+}
+.app-home .badge.bg-warning { background: #e6a600 !important; color: #000 !important; }
+.app-home .badge.bg-danger { background: #e60000 !important; color: #fff !important; }
+.app-home .carousel-caption { background: rgba(0,0,0,0.55); }
+.app-home a { color: #e60000; }
+
+/* Make images more prominent */
+.app-home .card-img-top { height: 190px; object-fit: cover; }
+
+/* products-area: lighter grey background with compact, stylish cards */
+.app-home .products-area {
+  background: #f2f2f2; /* sección gris */
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+}
+.app-home .products-area .card.product-card {
+  background: #fff;
+  color: #111;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.app-home .products-area .card.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+}
+.app-home .products-area .card .card-body { padding: 0.6rem; font-size: 0.92rem; }
+.app-home .products-area .card .card-img-top { height: 140px; }
+.app-home .products-area .badge { font-size: 0.72rem; padding: 0.25rem 0.45rem; }
+.app-home .products-area .btn { font-size: 0.85rem; padding: 0.45rem 0.6rem; }
+.app-home .products-area .text-muted { color: #6c6c6c !important; }
+.app-home .products-area .small { color: #222; }
+
+/* mini product card used inside featured categories */
+.app-home .product-mini-card {
+  display: inline-block;
+  width: 120px;
+  margin-right: 0.6rem;
+}
+.app-home .product-mini-card img { border-radius:6px; box-shadow: 0 6px 14px rgba(0,0,0,0.08); }
+.app-home .product-mini-card .small { color: #111; }
+.app-home .product-mini-card .text-danger { color: #e60000 !important; }
+
+/* category-block: full-width stacked gray blocks for featured categories */
+.app-home .category-block {
+  background: #f2f2f2;
+  border-radius: 0.6rem;
+  padding: 1rem;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.app-home .category-block .h6 { color: #111; font-weight:700; }
+.app-home .category-block .product-mini-card img { box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+
+/* larger product card inside category block */
+.app-home .category-product-card { background:#fff; border-radius:8px; overflow:hidden; }
+.app-home .category-product-card .card-body { padding:0.6rem; }
+.app-home .category-product-card img { width:100%; height:120px; object-fit:cover; }
+.app-home .category-product-card .btn-outline-dark { color:#111; border-color: rgba(0,0,0,0.08); }
+.app-home .category-product-card .btn-danger { background:#e60000; border-color:#b30000; }
+.app-home .category-product-card .fw-semibold { font-weight:600; }
+
+@media (max-width:576px) {
+  .app-home .category-product-card img { height:90px; }
+}
+
+
+/* responsive tweaks for compact cards */
+@media (max-width: 576px) {
+  .app-home .products-area .card .card-img-top { height: 110px; }
+  .app-home .products-area .card .card-body { font-size: 0.86rem; }
+}
+
+/* Make section titles within products-area dark and more visible over the grey background */
+.app-home .products-area h2,
+.app-home .products-area h3,
+.app-home .products-area h4,
+.app-home .products-area .h2,
+.app-home .products-area .h5,
+.app-home .products-area .h6 {
+  color: #0b0b0b !important;
+  text-shadow: none !important;
+}
+.app-home .products-area h2,
+.app-home .products-area .h5 {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.app-home .products-area .section-title {
+  color: #0b0b0b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+

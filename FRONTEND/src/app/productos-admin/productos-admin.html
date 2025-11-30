@@ -1,0 +1,385 @@
+<div class="container py-4">
+  <h4>Crear producto</h4>
+<div class="mb-3 d-flex gap-2 align-items-center">
+  <button class="btn btn-sm btn-outline-primary"
+          (click)="dispararRecargaN8n()"
+          [disabled]="loadingRecarga">
+    <span *ngIf="loadingRecarga" class="spinner-border spinner-border-sm me-1"></span>
+    Recargar productos desde Excel (n8n)
+  </button>
+
+  <span *ngIf="recargaMsg" class="small text-muted">
+    {{ recargaMsg }}
+  </span>
+</div>
+
+  <div *ngIf="message" class="alert alert-info">{{ message }}</div>
+
+  <!-- Products list -->
+  <div class="mb-4">
+    <h5 class="d-flex align-items-center justify-content-between">
+      <span>Productos</span>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-success" type="button" (click)="reloadProducts()">
+          Recargar lista
+        </button>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          type="button"
+          (click)="openManageModal('marcas')"
+        >
+          Gestionar marcas/categorías
+        </button>
+        <button class="btn btn-sm btn-primary" type="button" (click)="toggleCreate()">
+          {{ showCreate ? 'Cerrar formulario' : 'Nuevo producto' }}
+        </button>
+      </div>
+    </h5>
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Slug</th>
+          <th>Activo</th>
+          <th>Marcas</th>
+          <th>Categorías</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products">
+          <td>{{ p.idProducto ?? p.id }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.slug }}</td>
+          <td>{{ p.activo ? 'Sí' : 'No' }}</td>
+          <td style="max-width: 220px; white-space: normal">{{ getMarcaNames(p) || '-' }}</td>
+          <td style="max-width: 220px; white-space: normal">{{ getCategoriaNames(p) || '-' }}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary me-2" type="button" (click)="edit(p)">
+              Editar
+            </button>
+            <button class="btn btn-sm btn-outline-danger" type="button" (click)="delete(p)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Inline edit panel -->
+  <!-- (omitido para ahorrar espacio, no lo modificamos) -->
+  <!-- 🔹 PANEL DE EDICIÓN DE PRODUCTO -->
+  <div *ngIf="editModel" class="card p-3 mb-4 shadow-sm">
+    <h5>Editar producto: {{ editModel.nombre }}</h5>
+
+    <form (ngSubmit)="saveEdit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nombre</label>
+          <input class="form-control" [(ngModel)]="editModel.nombre" name="editNombre" required />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Slug</label>
+          <input class="form-control" [(ngModel)]="editModel.slug" name="editSlug" required />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <textarea
+          class="form-control"
+          [(ngModel)]="editModel.descripcion"
+          name="editDescripcion"
+        ></textarea>
+      </div>
+
+      <!-- IMÁGENES -->
+      <div class="mb-3">
+        <label class="form-label">Imágenes</label>
+        <div *ngIf="!(editModel.imagenes?.length)" class="small text-muted mb-2">No hay imágenes</div>
+        <div class="d-flex gap-2 flex-wrap mb-2">
+          <div *ngFor="let img of editModel.imagenes" class="text-center" style="width:140px;">
+            <img [src]="img.url" style="width:120px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e9e9e9" />
+            <div class="small mt-1">{{ img.textoAlt }}</div>
+            <div class="d-flex gap-1 justify-content-center mt-1">
+              <button class="btn btn-sm btn-outline-primary" type="button" (click)="startEditImage(img)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteImage(img)">Eliminar</button>
+            </div>
+            <div *ngIf="img._editing" class="mt-2">
+              <input class="form-control form-control-sm mb-1" [(ngModel)]="img.url" name="imgUrl{{img.idImagen}}" />
+              <input class="form-control form-control-sm mb-1" [(ngModel)]="img.textoAlt" name="imgAlt{{img.idImagen}}" />
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-primary" type="button" (click)="saveImageEdit(img)">Guardar</button>
+                <button class="btn btn-sm btn-secondary" type="button" (click)="cancelEditImage(img)">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <input class="form-control form-control-sm mb-1" placeholder="Nueva imagen URL" [(ngModel)]="newImageUrl" name="newImageUrl" />
+          <input class="form-control form-control-sm mb-1" placeholder="Texto alt" [(ngModel)]="newImageAlt" name="newImageAlt" />
+          <button class="btn btn-sm btn-success" type="button" (click)="addImageToEditModel()">Agregar imagen</button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Precio</label>
+        <input
+          type="number"
+          step="0.01"
+          class="form-control"
+          [(ngModel)]="editModel.precio"
+          name="editPrecio"
+        />
+      </div>
+
+      <!-- 🔸 Campo de stock editable -->
+      <div class="mb-3">
+        <label class="form-label">Stock</label>
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="editModel.stock"
+          name="editStock"
+          min="0"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label for="editDescuento" class="form-label">Descuento (%)</label>
+        <input
+          type="number"
+          id="editDescuento"
+          class="form-control"
+          [(ngModel)]="editModel.descuento"
+          name="editDescuento"
+          min="0"
+          max="100"
+          placeholder="Ej: 10"
+        />
+      </div>
+
+      <div class="form-check mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [(ngModel)]="editModel.activo"
+          name="editActivo"
+          id="editActivo"
+        />
+        <label class="form-check-label" for="editActivo">Activo</label>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="loading">Guardar</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="showCreate">
+    <form (ngSubmit)="create()">
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input class="form-control" [(ngModel)]="model.nombre" name="nombre" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Slug (único)</label>
+        <input class="form-control" [(ngModel)]="model.slug" name="slug" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <textarea
+          class="form-control"
+          [(ngModel)]="model.descripcion"
+          name="descripcion"
+        ></textarea>
+      </div>
+
+      <!-- Campo para URL de imagen (nuevo) -->
+      <div class="mb-3">
+        <label class="form-label">URL de imagen (opcional)</label>
+        <input class="form-control" [(ngModel)]="model.imagenUrl" name="imagenUrl" placeholder="https://..." />
+        <div *ngIf="model.imagenUrl" class="mt-2 d-flex align-items-center gap-3">
+          <div style="width:160px;height:100px;border:1px solid #eee;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:6px;background:#fafafa">
+            <img [src]="normalizeImageUrl(model.imagenUrl)" alt="preview" style="max-width:100%;max-height:100%;object-fit:cover" />
+          </div>
+          <div class="small text-muted">Pega la URL pública de la imagen. Se intentará persistirla automáticamente tras crear el producto.</div>
+        </div>
+      </div>
+
+      <div class="mb-3 form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [(ngModel)]="model.activo"
+          name="activo"
+          id="activo"
+        />
+        <label class="form-check-label" for="activo">Activo</label>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Marcas</label>
+        <div class="d-flex gap-2 mb-1">
+          <input
+            class="form-control form-control-sm"
+            placeholder="Buscar marcas..."
+            [(ngModel)]="marcaFilter"
+            (ngModelChange)="onMarcaFilterChange()"
+            name="createMarcaSearch"
+          />
+          <input
+            class="form-control form-control-sm"
+            placeholder="Nueva marca..."
+            [(ngModel)]="newMarcaName"
+            name="createNewMarca"
+          />
+          <button class="btn btn-sm btn-primary" type="button" (click)="createMarca()">
+            Crear
+          </button>
+        </div>
+        <div class="row row-cols-2 row-cols-md-3 g-1 entity-grid">
+          <div *ngFor="let m of filteredMarcas" class="col">
+            <div
+              class="form-check entity-item"
+              [class.checked]="isMarcaChecked(m.idMarca ?? m.id, false)"
+            >
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="'create-marca-' + (m.idMarca ?? m.id)"
+                [checked]="isMarcaChecked(m.idMarca ?? m.id, false)"
+                (change)="toggleMarcaSelection(m.idMarca ?? m.id, $event.target.checked, false)"
+              />
+              <label
+                class="form-check-label entity-label"
+                [for]="'create-marca-' + (m.idMarca ?? m.id)"
+                >{{ m.nombre }}</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🔹 Fila de precio, moneda y stock -->
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Precio</label>
+          <input
+            class="form-control"
+            type="number"
+            step="0.01"
+            [(ngModel)]="model.precio"
+            name="precio"
+          />
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Moneda</label>
+          <input class="form-control" [(ngModel)]="model.moneda" name="moneda" />
+        </div>
+        <!-- 🔸 Nuevo campo STOCK -->
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Stock</label>
+          <input
+            class="form-control"
+            type="number"
+            min="0"
+            [(ngModel)]="model.stock"
+            name="stock"
+            required
+          />
+        </div>
+        <!-- 💸 Campo de descuento -->
+        <div class="mb-3">
+          <label for="descuento" class="form-label">Descuento (%)</label>
+          <input
+            type="number"
+            id="descuento"
+            name="descuento"
+            class="form-control"
+            [(ngModel)]="model.descuento"
+            placeholder="Ej: 20"
+            min="0"
+            max="100"
+          />
+          <small class="form-text text-muted">
+            Ingresá un valor entre 0 y 100. Si no tiene descuento, dejalo en 0.
+          </small>
+        </div>
+        <div *ngIf="model.precio && model.descuento" class="mt-2">
+          <span class="text-muted small">Precio final con descuento:</span>
+          <strong class="text-success ms-2">
+            ${{ model.precio * (1 - model.descuento / 100) | number : '1.2-2' }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Categorías</label>
+        <div class="d-flex gap-2 mb-1">
+          <input
+            class="form-control form-control-sm"
+            placeholder="Buscar categorías..."
+            [(ngModel)]="categoriaFilter"
+            (ngModelChange)="onCategoriaFilterChange()"
+            name="createCategoriaSearch"
+          />
+          <input
+            class="form-control form-control-sm"
+            placeholder="Nueva categoría..."
+            [(ngModel)]="newCategoriaName"
+            name="createNewCategoria2"
+          />
+          <button class="btn btn-sm btn-primary" type="button" (click)="createCategoria()">
+            Crear
+          </button>
+        </div>
+        <div class="row row-cols-2 row-cols-md-3 g-1 entity-grid">
+          <div *ngFor="let c of filteredCategorias" class="col">
+            <div
+              class="form-check entity-item"
+              [class.checked]="isCategoriaChecked(c.idCategoria ?? c.id, false)"
+            >
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="'create-cat-' + (c.idCategoria ?? c.id)"
+                [checked]="isCategoriaChecked(c.idCategoria ?? c.id, false)"
+                (change)="
+                  toggleCategoriaSelection(c.idCategoria ?? c.id, $event.target.checked, false)
+                "
+              />
+              <label
+                class="form-check-label entity-label"
+                [for]="'create-cat-' + (c.idCategoria ?? c.id)"
+                >{{ c.nombre }}</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit" [disabled]="loading">Crear</button>
+      <button
+        class="btn btn-secondary ms-2"
+        type="button"
+        (click)="createMinimal()"
+        [disabled]="loading"
+      >
+        Probar sin asociaciones
+      </button>
+      <button class="btn btn-outline-secondary ms-2" type="button" (click)="toggleCreate()">
+        Cancelar
+      </button>
+    </form>
+  </div>
+</div>

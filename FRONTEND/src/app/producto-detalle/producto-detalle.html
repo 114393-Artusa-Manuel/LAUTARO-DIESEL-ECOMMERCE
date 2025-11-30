@@ -38,6 +38,16 @@
       <h3>{{ product.nombre }}</h3>
       <p class="text-muted">{{ product.descripcion }}</p>
 
+      <div *ngIf="marcaNames" class="mb-2">
+        <strong>Marcas:</strong>
+        <span class="text-muted">{{ marcaNames }}</span>
+      </div>
+
+      <div *ngIf="categoriaNames" class="mb-2">
+        <strong>Categorías:</strong>
+        <span class="text-muted">{{ categoriaNames }}</span>
+      </div>
+
       <div class="mb-3">
         <strong *ngIf="product.precio != null">{{ product.precio | number:'1.2-2' }} {{ product.moneda || '' }}</strong>
         <span *ngIf="product.precio == null" class="text-muted">Precio no disponible</span>

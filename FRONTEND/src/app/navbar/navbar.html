@@ -37,6 +37,9 @@
           >Productos (Admin)</a
         >
       </li>
+      <li class="nav-item" *ngIf="isAdmin()">
+        <a class="nav-link" routerLink="/admin/pagos" routerLinkActive="active">Pagos (Admin)</a>
+      </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/terminos" routerLinkActive="active"
           >Términos y Condiciones</a

@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class PagoService {
   private baseUrl = `${environment.backendBaseUrl}/api/payments`;
+  private baseUrlPagos = `${environment.backendBaseUrl}/api/pagos`;
 
   constructor(private http: HttpClient) {}
 
@@ -17,5 +18,9 @@ export class PagoService {
 
   getStatus(orderId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/status/${orderId}`);
+  }
+
+  getAll(): Observable<any> {
+    return this.http.get(`${this.baseUrlPagos}`);
   }
 }

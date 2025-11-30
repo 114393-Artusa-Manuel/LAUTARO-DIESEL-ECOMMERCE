@@ -6,6 +6,7 @@ import { Profile } from './profile/profile';
 import { AuthGuard } from './services/auth.guard';
 import { PanelAdmin } from './panel-admin/panel-admin';
 import { ProductosAdmin } from './productos-admin/productos-admin';
+import { PaymentsAdmin } from './payments-admin/payments-admin';
 import { PasswordRecovery } from './password-recovery/password-recovery';
 import { Productos } from './productos/productos';
 import { ProductoDetalle } from './producto-detalle/producto-detalle';
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'profile', component: Profile, canActivate: [AuthGuard] },
   { path: 'panel-admin', component: PanelAdmin, canActivate: [AuthGuard] },
   { path: 'admin/productos', component: ProductosAdmin, canActivate: [AuthGuard] },
+  { path: 'admin/pagos', component: PaymentsAdmin, canActivate: [AuthGuard] },
   { path: 'checkout', component: CheckoutComponent },
   { path: 'checkout/success', component: SuccessComponent },
   { path: 'checkout/failure', component: FailureComponent },

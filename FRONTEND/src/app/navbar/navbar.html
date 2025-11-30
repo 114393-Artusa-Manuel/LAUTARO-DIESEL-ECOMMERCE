@@ -11,7 +11,8 @@
   </button>
 
   <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ms-auto">
+    <!-- Left side links -->
+    <ul class="navbar-nav">
       <li class="nav-item">
         <a class="nav-link" routerLink="/productos" routerLinkActive="active">Productos</a>
       </li>
@@ -20,37 +21,30 @@
           >Carrito <span class="badge bg-primary ms-1">{{ (totalCount$ | async) || 0 }}</span></a
         >
       </li>
-      <li class="nav-item" *ngIf="!isAuthenticated()">
-        <a class="nav-link" routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
-      </li>
-      <li class="nav-item" *ngIf="!isAuthenticated()">
-        <a class="nav-link" routerLink="/register" routerLinkActive="active">Registrarse</a>
-      </li>
-      <li class="nav-item" *ngIf="isAuthenticated()">
-        <a class="nav-link" routerLink="/profile" routerLinkActive="active">Ver perfil</a>
-      </li>
-      <li class="nav-item" *ngIf="isAdmin()">
-        <a class="nav-link" routerLink="/panel-admin" routerLinkActive="active">Panel</a>
-      </li>
-      <li class="nav-item" *ngIf="isAdmin()">
-        <a class="nav-link" routerLink="/admin/productos" routerLinkActive="active"
-          >Productos (Admin)</a
-        >
-      </li>
-      <li class="nav-item" *ngIf="isAdmin()">
-        <a class="nav-link" routerLink="/admin/pagos" routerLinkActive="active">Pagos (Admin)</a>
-      </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/terminos" routerLinkActive="active"
-          >Términos y Condiciones</a
-        >
+        <a class="nav-link" routerLink="/terminos" routerLinkActive="active">Términos y Condiciones</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/faq" routerLinkActive="active">Preguntas Frecuentes</a>
       </li>
+    </ul>
+
+    <!-- Right side: authentication controls -->
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item" *ngIf="!isAuthenticated()">
+        <a class="nav-link" routerLink="/register" routerLinkActive="active">Registrarse</a>
+      </li>
+      <li class="nav-item" *ngIf="!isAuthenticated()">
+        <a class="nav-link" routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
+      </li>
 
       <li class="nav-item" *ngIf="isAuthenticated()">
-        <!-- Use an anchor for consistent nav-link styling and visibility; prevent default navigation -->
+        <a class="nav-link" routerLink="/profile" routerLinkActive="active">Ver perfil</a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin()">
+        <a class="nav-link" routerLink="/admin" routerLinkActive="active">Panel</a>
+      </li>
+      <li class="nav-item" *ngIf="isAuthenticated()">
         <a
           class="nav-link"
           href="#"

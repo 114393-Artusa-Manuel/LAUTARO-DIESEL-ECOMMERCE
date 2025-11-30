@@ -18,3 +18,9 @@
 @media (max-width:768px){
   canvas#paymentsChart{height:160px!important}
 }
+
+/* Ensure table columns are stable so 'Estado' doesn't jump positions when some columns hide */
+.payments-table{ table-layout: fixed; }
+.payments-table th, .payments-table td{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.payments-table .status-col{ width:120px; }
+.payments-table .status-col .status-badge{ display:inline-block; min-width:70px; }

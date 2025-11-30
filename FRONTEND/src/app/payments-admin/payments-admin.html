@@ -126,13 +126,13 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
+                    <table class="table table-hover mb-0 align-middle payments-table">
                         <thead class="table-light">
                             <tr>
                                 <th>Fecha</th>
                                 <th class="d-none d-sm-table-cell">Orden</th>
                                 <th>Monto</th>
-                                <th>Estado</th>
+                                <th class="status-col text-center">Estado</th>
                                 <th class="d-none d-md-table-cell">Email</th>
                                 <th>Método</th>
                             </tr>
@@ -156,7 +156,7 @@
                                     $ {{ getPaymentAmount(p) | number:'1.0-0' }}
                                     <span class="text-muted small">{{ p.currency || 'ARS' }}</span>
                                 </td>
-                                <td>
+                                <td class="status-col text-center">
                                     <span class="status-badge text-capitalize" [ngClass]="{
                       'status-approved': getStatus(p) === 'approved',
                       'status-rejected': getStatus(p) === 'rejected',

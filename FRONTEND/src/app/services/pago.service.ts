@@ -23,4 +23,14 @@ export class PagoService {
   getAll(): Observable<any> {
     return this.http.get(`${this.baseUrlPagos}`);
   }
+
+  
+  getItemsByPagoId(pagoId: number | string): Observable<any> {
+    return this.http.get(`${this.baseUrlPagos}/${pagoId}/items`);
+  }
+
+ 
+  getItemsByOrderId(orderId: number | string): Observable<any> {
+    return this.http.get(`${this.baseUrlPagos}/order/${orderId}/items`);
+  }
 }

@@ -102,14 +102,16 @@ public class OrdenServiceImpl implements OrdenService {
         orden.setEstado("PENDIENTE"); // 👈 CORRECTO
         orden.setTotal(total);
 
-        List<ItemOrdenEntity> items = request.getItems().stream().map(item ->
-                ItemOrdenEntity.builder()
-                        .orden(orden)
-                        .producto(productoRepository.findById(item.getIdProducto()).orElseThrow())
-                        .cantidad(item.getCantidad())
-                        .precioUnitario(0.0)
-                        .build()
-        ).toList();
+        List<ItemOrdenEntity> items = request.getItems().stream().map(item -> {
+            var producto = productoRepository.findById(item.getIdProducto()).orElseThrow();
+            double precioUnit = producto.getPrecio() != null ? producto.getPrecio().doubleValue() : 0.0;
+            return ItemOrdenEntity.builder()
+                .orden(orden)
+                .producto(producto)
+                .cantidad(item.getCantidad())
+                .precioUnitario(precioUnit)
+                .build();
+        }).toList();
 
         orden.setItems(items);
         ordenRepository.save(orden);

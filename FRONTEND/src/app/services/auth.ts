@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
@@ -23,8 +24,9 @@ interface LoginResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  //  URL base general del backend
-  private baseUrl = 'https://synesthetic-dowily-oda.ngrok-free.dev:8080';
+  //  URL base general del backend. Preferimos usar el `environment` para cambiar entre
+  //  entornos (local / staging). Si no existe, hacemos fallback a localhost.
+  private baseUrl = (environment && environment.backendBaseUrl) ? environment.backendBaseUrl : 'http://localhost:8080';
 
   private _usuario = signal<any | null>(
     typeof window !== 'undefined' &&

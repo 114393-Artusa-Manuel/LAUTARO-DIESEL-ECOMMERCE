@@ -150,3 +150,51 @@
   font-weight: 700;
 }
 
+/* 🌟 PROMO POPUP CARRUSEL */
+.promo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.93);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+}
+
+.promo-modal {
+  position: relative;
+  width: 90%;
+  max-width: 1000px;
+  border-radius: 10px;
+  overflow: hidden;
+  animation: fadeIn .5s ease-out;
+}
+
+.promo-img {
+  height: 560px;
+  object-fit: cover;
+}
+
+.promo-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 999999;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+
+
+

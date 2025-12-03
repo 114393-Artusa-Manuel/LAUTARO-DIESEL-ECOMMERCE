@@ -14,8 +14,15 @@ import { CategoriaService } from '../services/categoria.service';
 
 registerLocaleData(esAR);
 
-type Category = { id:number; name:string; icon?:string };
-type Product  = { id:number; name:string; price:number; img:string; badge?:string; categoryId:number };
+type Category = { id: number; name: string; icon?: string };
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  img: string;
+  badge?: string;
+  categoryId: number;
+};
 
 @Component({
   selector: 'app-home',
@@ -32,6 +39,21 @@ export class Home {
   private marcaService = inject(MarcaService);
   private categoriaService = inject(CategoriaService);
 
+  showPromoBanner = true;
+
+  promoSlides = [
+    { src: 'assets/img/promo-lautaro-diesel.jpg', alt: 'Promo inyección Diesel' },
+    { src: 'assets/img/promo-turbos.jpg', alt: 'Promo Turbos' },
+    { src: 'assets/img/promo-repuestos.jpg', alt: 'Repuestos Diesel' },
+  ];
+
+  ngOnInit(): void {
+    // Siempre mostrar cuando cargue la página
+  }
+
+  closePromo(): void {
+    this.showPromoBanner = false;
+  }
   q = '';
   activeCategory: number | 'all' = 'all';
   selectedMarcaId: number | string | null = null;
@@ -69,22 +91,22 @@ export class Home {
       next: (res: any) => {
         // backend may wrap responses
         const data = res?.data ?? res ?? [];
-        this.marcas = Array.isArray(data) ? data : (data.content ?? []);
+        this.marcas = Array.isArray(data) ? data : data.content ?? [];
       },
       error: () => {
         // ignore silently for now
-      }
+      },
     });
 
     // load categorias
     this.categoriaService.getAll().subscribe({
       next: (res: any) => {
         const data = res?.data ?? res ?? [];
-        this.categorias = Array.isArray(data) ? data : (data.content ?? []);
+        this.categorias = Array.isArray(data) ? data : data.content ?? [];
         // once categories are loaded, fetch top categories products
         this.loadTopCategoriesProducts();
       },
-      error: () => {}
+      error: () => {},
     });
   }
 
@@ -112,14 +134,14 @@ export class Home {
       next: (res: any) => {
         this.loadingCategoryProducts[key] = false;
         const data = res?.data ?? res ?? [];
-        const items = Array.isArray(data) ? data : (data.content ?? []);
+        const items = Array.isArray(data) ? data : data.content ?? [];
         this.categoryProducts[key] = items;
       },
       error: (err: any) => {
         this.loadingCategoryProducts[key] = false;
         this.categoryProducts[key] = [];
         console.warn('Failed to load category products', categoriaId, err);
-      }
+      },
     });
   }
 
@@ -131,30 +153,43 @@ export class Home {
         this.loading = false;
         if (Array.isArray(res)) this.products = res;
         else if (res?.data && Array.isArray(res.data)) this.products = res.data;
-        else if (res?.data?.content && Array.isArray(res.data.content)) this.products = res.data.content;
+        else if (res?.data?.content && Array.isArray(res.data.content))
+          this.products = res.data.content;
         else this.products = res?.data ?? res ?? [];
       },
       error: (err: any) => {
         this.loading = false;
         console.error('Failed to load products', err);
         this.message = 'No se pudieron cargar los productos desde el servidor.';
-      }
+      },
     });
   }
 
   get filteredProducts(): any[] {
     const t = this.q.trim().toLowerCase();
-    return this.products.filter(p => {
+    return this.products.filter((p) => {
       // category match: support different shapes
-      const catMatch = this.activeCategory === 'all' ||
+      const catMatch =
+        this.activeCategory === 'all' ||
         p.categoryId === this.activeCategory ||
-        (p.categorias && Array.isArray(p.categorias) && p.categorias.some((c:any) => c.id === this.activeCategory)) ||
-        (p.categoriasIds && Array.isArray(p.categoriasIds) && p.categoriasIds.includes(this.activeCategory as any));
+        (p.categorias &&
+          Array.isArray(p.categorias) &&
+          p.categorias.some((c: any) => c.id === this.activeCategory)) ||
+        (p.categoriasIds &&
+          Array.isArray(p.categoriasIds) &&
+          p.categoriasIds.includes(this.activeCategory as any));
 
       // marca match
-      const marcaMatch = !this.selectedMarcaId ||
-        (p.marcas && Array.isArray(p.marcas) && p.marcas.some((m:any) => String(m.id ?? m.idMarca ?? m) === String(this.selectedMarcaId))) ||
-        (p.marcasIds && Array.isArray(p.marcasIds) && p.marcasIds.map(String).includes(String(this.selectedMarcaId)));
+      const marcaMatch =
+        !this.selectedMarcaId ||
+        (p.marcas &&
+          Array.isArray(p.marcas) &&
+          p.marcas.some(
+            (m: any) => String(m.id ?? m.idMarca ?? m) === String(this.selectedMarcaId)
+          )) ||
+        (p.marcasIds &&
+          Array.isArray(p.marcasIds) &&
+          p.marcasIds.map(String).includes(String(this.selectedMarcaId)));
 
       const name = this.getName(p).toLowerCase();
       const textMatch = !t || name.includes(t);
@@ -169,8 +204,12 @@ export class Home {
     return this.products.slice(0, 3);
   }
 
-  setCategory(cat: number | 'all') { this.activeCategory = cat; }
-  toggleOffers() { this.onlyOffers = !this.onlyOffers; }
+  setCategory(cat: number | 'all') {
+    this.activeCategory = cat;
+  }
+  toggleOffers() {
+    this.onlyOffers = !this.onlyOffers;
+  }
 
   setBrand(marcaId: number | string | null) {
     this.selectedMarcaId = marcaId;
@@ -183,7 +222,7 @@ export class Home {
   }
 
   hasNovedades(): boolean {
-    return Array.isArray(this.products) && this.products.some(p => p.badge === 'NUEVO');
+    return Array.isArray(this.products) && this.products.some((p) => p.badge === 'NUEVO');
   }
 
   // Safe accessors to handle varying backend shapes and avoid 'undefined' in templates
@@ -205,7 +244,8 @@ export class Home {
       const first = arr[0];
       if (!first) return 'assets/no-image.png';
       if (typeof first === 'string') return first;
-      if (typeof first === 'object') return first.url ?? first.src ?? first.path ?? 'assets/no-image.png';
+      if (typeof first === 'object')
+        return first.url ?? first.src ?? first.path ?? 'assets/no-image.png';
     }
 
     return 'assets/no-image.png';
@@ -227,7 +267,7 @@ export class Home {
     // fallback to a predictable index-based key
     return `_idx_${index ?? 0}`;
   }
-  
+
   // Extract a usable product id for routing (similar to Productos.getProductId)
   getProductId(p: any): any {
     return (
@@ -247,7 +287,7 @@ export class Home {
     const id = this.getProductId(p);
     return id !== null && id !== undefined && String(id).trim() !== '';
   }
-    search() {
+  search() {
     const t = this.q.trim().toLowerCase();
 
     // si solo querés mostrar un mensajito cuando no encuentra nada:
@@ -257,5 +297,4 @@ export class Home {
       this.message = '';
     }
   }
-
 }

@@ -19,8 +19,11 @@ export class ResetPassword {
   error: string | null = null;
 
   constructor(private route: ActivatedRoute, private auth: AuthService, private router: Router) {
-    this.token = this.route.snapshot.queryParamMap.get('token') || '';
-  }
+  this.route.paramMap.subscribe(params => {
+    this.token = params.get('token') || '';
+  });
+}
+
 
   submit() {
     this.error = null;

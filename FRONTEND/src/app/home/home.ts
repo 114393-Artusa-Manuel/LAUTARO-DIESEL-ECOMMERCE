@@ -48,7 +48,16 @@ export class Home {
   ];
 
   ngOnInit(): void {
-    // Siempre mostrar cuando cargue la página
+    // Si viene de un enlace de recuperación NO mostrar banner
+    const url = window.location.href;
+    if (url.includes('reset-password')) {
+      this.showPromoBanner = false;
+      return;
+    }
+
+    // Banner normal si no se cerró antes
+    const closed = localStorage.getItem('promo_banner_closed');
+    this.showPromoBanner = closed !== 'true';
   }
 
   closePromo(): void {

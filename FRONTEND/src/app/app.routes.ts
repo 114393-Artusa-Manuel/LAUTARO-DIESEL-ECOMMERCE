@@ -26,6 +26,10 @@ export const routes: Routes = [
   { path: 'home', component: Home },
   { path: 'login', component: Login },
   { path: 'password-recovery', component: PasswordRecovery },
+  { path: 'reset-password/:token',
+    loadComponent: () =>
+      import('./reset-password/reset-password').then(m => m.ResetPassword)
+  },
   { path: 'register', component: Register },
   { path: 'productos', component: Productos },
   { path: 'productos/:id', component: ProductoDetalle },

@@ -66,7 +66,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
         recuperacionClaveRepository.save(rc);
 
         // Construir enlace de recuperación
-        String resetUrl = appBaseUrl + "/reset-password?token=" + token;
+        String resetUrl = appBaseUrl + "/reset-password/" + token;
 
         // Enviar correo con Gmail API
         enviarCorreoRecuperacion(usuario.getCorreo(), resetUrl);

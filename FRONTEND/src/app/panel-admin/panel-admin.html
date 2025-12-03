@@ -3,7 +3,7 @@
   <div class="row mb-3">
     <div class="col-12 d-flex justify-content-between align-items-center">
       <h4>Panel de administración</h4>
-      <div><button class="btn btn-secondary" routerLink="/">Volver</button></div>
+      <button class="btn btn-secondary" (click)="goBack()">Volver</button>
     </div>
   </div>
 
@@ -14,9 +14,12 @@
 
   <div class="row mb-3">
     <div class="col-md-3 mb-2">
-      <input class="form-control" placeholder="Buscar por nombre o email"
-             [(ngModel)]="search"
-             (ngModelChange)="onFilterChange()" />
+      <input
+        class="form-control"
+        placeholder="Buscar por nombre o email"
+        [(ngModel)]="search"
+        (ngModelChange)="onFilterChange()"
+      />
     </div>
 
     <div class="col-md-2 mb-2">
@@ -24,38 +27,56 @@
       <select class="form-select" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
         <option value="">Todos los roles</option>
         @for (r of availableRoles; track r.id) {
-          <option [value]="r.nombre">{{ r.nombre }}</option>
+        <option [value]="r.nombre">{{ r.nombre }}</option>
         }
       </select>
     </div>
 
     <div class="col-md-2 mb-2">
-      <input type="date" class="form-control" [(ngModel)]="fromDate" (ngModelChange)="onFilterChange()" />
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="fromDate"
+        (ngModelChange)="onFilterChange()"
+      />
     </div>
 
     <div class="col-md-2 mb-2">
-      <input type="date" class="form-control" [(ngModel)]="toDate" (ngModelChange)="onFilterChange()" />
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="toDate"
+        (ngModelChange)="onFilterChange()"
+      />
     </div>
 
     <div class="col-md-3 mb-2 text-end">
       <div class="btn-group">
-        <button class="btn btn-outline-primary" [class.active]="sort==='recent'"
-                (click)="sort='recent'; onFilterChange()">Más recientes</button>
-        <button class="btn btn-outline-primary" [class.active]="sort==='oldest'"
-                (click)="sort='oldest'; onFilterChange()">Más antiguos</button>
+        <button
+          class="btn btn-outline-primary"
+          [class.active]="sort === 'recent'"
+          (click)="sort = 'recent'; onFilterChange()"
+        >
+          Más recientes
+        </button>
+        <button
+          class="btn btn-outline-primary"
+          [class.active]="sort === 'oldest'"
+          (click)="sort = 'oldest'; onFilterChange()"
+        >
+          Más antiguos
+        </button>
       </div>
     </div>
   </div>
 
   @if (error) {
-    <div class="alert alert-danger">{{ error }}</div>
-  }
-
-  @if (loading) {
-    <div class="d-flex align-items-center gap-2 mb-3">
-      <div class="spinner-border spinner-border-sm" role="status"></div>
-      <span>Cargando usuarios…</span>
-    </div>
+  <div class="alert alert-danger">{{ error }}</div>
+  } @if (loading) {
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="spinner-border spinner-border-sm" role="status"></div>
+    <span>Cargando usuarios…</span>
+  </div>
   }
 
   <div class="row">
@@ -73,18 +94,21 @@
           </thead>
           <tbody>
             @for (u of usuariosView; let i = $index; track u.id ?? i) {
-              <tr>
-                <td>{{ u.nombre || u.nombreCompleto || u.name }}</td>
-                <td>{{ u.email || u.correo }}</td>
-                <td>{{ getRoleNames(u) }}</td>
-                <td>{{ (u.fechaCreacion || u.createdAt || u.created) | date:'short' }}</td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary" (click)="openAssign(u)">Editar roles</button>
-                </td>
-              </tr>
-            }
-            @if (!usuariosView.length && !loading) {
-              <tr><td colspan="5" class="text-center text-muted">Sin resultados</td></tr>
+            <tr>
+              <td>{{ u.nombre || u.nombreCompleto || u.name }}</td>
+              <td>{{ u.email || u.correo }}</td>
+              <td>{{ getRoleNames(u) }}</td>
+              <td>{{ u.fechaCreacion || u.createdAt || u.created | date : 'short' }}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary" (click)="openAssign(u)">
+                  Editar roles
+                </button>
+              </td>
+            </tr>
+            } @if (!usuariosView.length && !loading) {
+            <tr>
+              <td colspan="5" class="text-center text-muted">Sin resultados</td>
+            </tr>
             }
           </tbody>
         </table>
@@ -93,61 +117,88 @@
   </div>
 
   @if (assigningTo) {
-    <div class="modal-backdrop" (click)="cancelAssign()">
-      <div class="modal-dialog" role="dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content p-3">
-          <h5 class="mb-3">
-            Editar roles de
-            {{ assigningTo?.nombre || assigningTo?.nombreCompleto || assigningTo?.email }}
-          </h5>
+  <div class="modal-backdrop" (click)="cancelAssign()">
+    <div class="modal-dialog" role="dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content p-3">
+        <h5 class="mb-3">
+          Editar roles de
+          {{ assigningTo?.nombre || assigningTo?.nombreCompleto || assigningTo?.email }}
+        </h5>
 
-          <div class="border rounded p-2 mb-3" style="max-height:260px; overflow:auto;">
-            @if (!availableRoles.length) {
-              <div class="text-muted">Sin roles disponibles</div>
-            }
-            @for (r of availableRoles; track r.id) {
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox"
-                       [id]="'r-' + r.id"
-                       [checked]="selectedRoleIds.has(r.id)"
-                       (change)="toggleRole(r.id, $any($event.target).checked)"
-                       [disabled]="assignLoading">
-                <label class="form-check-label" [for]="'r-' + r.id">{{ r.nombre }}</label>
-              </div>
-            }
+        <div class="border rounded p-2 mb-3" style="max-height: 260px; overflow: auto">
+          @if (!availableRoles.length) {
+          <div class="text-muted">Sin roles disponibles</div>
+          } @for (r of availableRoles; track r.id) {
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              [id]="'r-' + r.id"
+              [checked]="selectedRoleIds.has(r.id)"
+              (change)="toggleRole(r.id, $any($event.target).checked)"
+              [disabled]="assignLoading"
+            />
+            <label class="form-check-label" [for]="'r-' + r.id">{{ r.nombre }}</label>
           </div>
-
-          <!-- Dev-only: decoded token claims -->
-          @if (decodedToken) {
-            <div class="alert alert-light small mt-2">Token claims: <pre style="white-space:pre-wrap">{{ decodedToken | json }}</pre></div>
           }
+        </div>
 
-          <div class="d-flex justify-content-between mb-2">
-            <div class="btn-group btn-group-sm">
-              <button class="btn btn-outline-secondary" (click)="selectNone()" [disabled]="assignLoading">Ninguno</button>
-              <button class="btn btn-outline-secondary" (click)="selectAll()" [disabled]="assignLoading">Todos</button>
-            </div>
-            <small class="text-muted">Seleccionados: {{ selectedRoleIds.size }}</small>
-          </div>
+        <!-- Dev-only: decoded token claims -->
+        @if (decodedToken) {
+        <div class="alert alert-light small mt-2">
+          Token claims:
+          <pre style="white-space: pre-wrap">{{ decodedToken | json }}</pre>
+        </div>
+        }
 
-          <div class="text-end">
-            <button class="btn btn-outline-secondary me-2" (click)="cancelAssign()" [disabled]="assignLoading">Cancelar</button>
-            <button class="btn btn-primary" (click)="saveRoles()" [disabled]="assignLoading">
-              @if (assignLoading) { <span class="spinner-border spinner-border-sm me-2" role="status"></span> }
-              Guardar cambios
+        <div class="d-flex justify-content-between mb-2">
+          <div class="btn-group btn-group-sm">
+            <button
+              class="btn btn-outline-secondary"
+              (click)="selectNone()"
+              [disabled]="assignLoading"
+            >
+              Ninguno
+            </button>
+            <button
+              class="btn btn-outline-secondary"
+              (click)="selectAll()"
+              [disabled]="assignLoading"
+            >
+              Todos
             </button>
           </div>
+          <small class="text-muted">Seleccionados: {{ selectedRoleIds.size }}</small>
+        </div>
+
+        <div class="text-end">
+          <button
+            class="btn btn-outline-secondary me-2"
+            (click)="cancelAssign()"
+            [disabled]="assignLoading"
+          >
+            Cancelar
+          </button>
+          <button class="btn btn-primary" (click)="saveRoles()" [disabled]="assignLoading">
+            @if (assignLoading) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span> } Guardar
+            cambios
+          </button>
         </div>
       </div>
     </div>
+  </div>
   }
 </div>
 
 <style>
   .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.5);
-    display: flex; align-items: center; justify-content: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 1050;
   }
 </style>

@@ -7,6 +7,8 @@ import { UsuarioService, AuthService } from '../services/usuarioService';
 import { RolesService } from '../services/rolService';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { Location } from '@angular/common';
+
 
 @Component({
   selector: 'app-panel-admin',
@@ -20,10 +22,10 @@ export class PanelAdmin implements OnDestroy {
   private rolesApi = inject(RolesService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private location = inject(Location);
 
   usuarios: any[] = [];
   usuariosView: any[] = [];
-
   loading = false;
   error = '';
 
@@ -50,13 +52,11 @@ export class PanelAdmin implements OnDestroy {
 
   constructor() {
     // filtros con debounce
-    this.filterSub = this.filter$
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        this.page = 0;
-        this.applyClientFilters();
-        this.loadUsuarios();
-      });
+    this.filterSub = this.filter$.pipe(debounceTime(300)).subscribe(() => {
+      this.page = 0;
+      this.applyClientFilters();
+      this.loadUsuarios();
+    });
 
     // guardia admin
     const user = this.auth.getUsuario();
@@ -64,8 +64,12 @@ export class PanelAdmin implements OnDestroy {
     const isAdmin = (() => {
       if (!roles) return false;
       if (typeof roles === 'string') return roles.toLowerCase().includes('admin');
-      if (Array.isArray(roles)) return roles.some((r: any) => (r?.nombre || r?.name || String(r)).toLowerCase().includes('admin'));
-      if (typeof roles === 'object') return (roles?.nombre || roles?.name || String(roles)).toLowerCase().includes('admin');
+      if (Array.isArray(roles))
+        return roles.some((r: any) =>
+          (r?.nombre || r?.name || String(r)).toLowerCase().includes('admin')
+        );
+      if (typeof roles === 'object')
+        return (roles?.nombre || roles?.name || String(roles)).toLowerCase().includes('admin');
       return false;
     })();
     if (!isAdmin) this.router.navigateByUrl('/');
@@ -73,14 +77,20 @@ export class PanelAdmin implements OnDestroy {
 
     // catálogo de roles
     this.rolesApi.getAll().subscribe({
-      next: (res: any) => { this.availableRoles = Array.isArray(res) ? res : (res?.data ?? res ?? []); },
-      error: () => { this.availableRoles = []; },
+      next: (res: any) => {
+        this.availableRoles = Array.isArray(res) ? res : res?.data ?? res ?? [];
+      },
+      error: () => {
+        this.availableRoles = [];
+      },
     });
 
     // sync: reload when roles change elsewhere
     if (typeof window !== 'undefined') {
       window.addEventListener('app:roles-updated', () => this.loadUsuarios());
-      window.addEventListener('storage', (ev: StorageEvent) => { if (ev.key === 'rolesUpdatedAt') this.loadUsuarios(); });
+      window.addEventListener('storage', (ev: StorageEvent) => {
+        if (ev.key === 'rolesUpdatedAt') this.loadUsuarios();
+      });
     }
   }
 
@@ -104,7 +114,7 @@ export class PanelAdmin implements OnDestroy {
       })
       .subscribe({
         next: (res: any) => {
-          this.usuarios = Array.isArray(res) ? res : (res?.data ?? res ?? []);
+          this.usuarios = Array.isArray(res) ? res : res?.data ?? res ?? [];
           // normalize/resolve roles for display
           this.resolveUserRoles();
           this.applyClientFilters();
@@ -132,7 +142,11 @@ export class PanelAdmin implements OnDestroy {
     const normalize = (s: any) => {
       if (!s && s !== 0) return '';
       try {
-        return String(s).toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[\u0300-\u036f]/g, '');
+        return String(s)
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
+          .replace(/[\u0300-\u036f]/g, '');
       } catch (e) {
         return String(s).toLowerCase();
       }
@@ -152,10 +166,11 @@ export class PanelAdmin implements OnDestroy {
           const n = Number(it);
           if (!isNaN(n)) ids.push(n);
           const found = s.match(/\b(\d+)\b/g);
-          if (found) for (const f of found) {
-            const vf = Number(f);
-            if (!isNaN(vf)) ids.push(vf);
-          }
+          if (found)
+            for (const f of found) {
+              const vf = Number(f);
+              if (!isNaN(vf)) ids.push(vf);
+            }
         } else if (typeof it === 'object') {
           const name = it.nombre ?? it.name ?? it.role ?? JSON.stringify(it);
           names.push(normalize(name));
@@ -165,10 +180,11 @@ export class PanelAdmin implements OnDestroy {
           try {
             const json = JSON.stringify(it);
             const found = json.match(/\b(\d+)\b/g);
-            if (found) for (const f of found) {
-              const vf = Number(f);
-              if (!isNaN(vf)) ids.push(vf);
-            }
+            if (found)
+              for (const f of found) {
+                const vf = Number(f);
+                if (!isNaN(vf)) ids.push(vf);
+              }
           } catch {}
         }
       }
@@ -191,7 +207,7 @@ export class PanelAdmin implements OnDestroy {
       const maybeNum = String(rf).trim();
       if (maybeNum !== '' && !isNaN(Number(maybeNum))) {
         const n = Number(maybeNum);
-        if (!isNaN(n)) return ids.includes(n) || names.some(nm => nm.includes(String(n)));
+        if (!isNaN(n)) return ids.includes(n) || names.some((nm) => nm.includes(String(n)));
       }
 
       // otherwise treat rf as part of role name (case- and diacritics-insensitive)
@@ -199,16 +215,18 @@ export class PanelAdmin implements OnDestroy {
 
       // match against resolved role names first
       if (Array.isArray(u._roleNames) && u._roleNames.length) {
-        return u._roleNames.map((x:any) => normalize(x)).some((rn: string) => rn.includes(needle));
+        return u._roleNames.map((x: any) => normalize(x)).some((rn: string) => rn.includes(needle));
       }
 
       // fallback to names/ids extracted from the user object
-      if (names.some(nm => nm.includes(needle))) return true;
+      if (names.some((nm) => nm.includes(needle))) return true;
       // also match against availableRoles catalog names (in case user has only ids)
-      const catalogNameMatch = this.availableRoles.some(r => normalize(r.nombre).includes(needle) && ids.includes(r.id));
+      const catalogNameMatch = this.availableRoles.some(
+        (r) => normalize(r.nombre).includes(needle) && ids.includes(r.id)
+      );
       if (catalogNameMatch) return true;
 
-      return ids.some(id => String(id).includes(needle));
+      return ids.some((id) => String(id).includes(needle));
     };
 
     const inRange = (u: any) => {
@@ -225,7 +243,7 @@ export class PanelAdmin implements OnDestroy {
       return this.sort === 'recent' ? db - da : da - db;
     });
 
-    this.usuariosView = sorted.filter(u => textMatch(u) && hasRole(u) && inRange(u));
+    this.usuariosView = sorted.filter((u) => textMatch(u) && hasRole(u) && inRange(u));
   }
 
   // eventos filtros
@@ -252,7 +270,8 @@ export class PanelAdmin implements OnDestroy {
         } else if (typeof it === 'object') {
           if (it.nombre) names.push(it.nombre);
           else if (it.name) names.push(it.name);
-          else if (it.id && catalog.has(Number(it.id))) names.push(catalog.get(Number(it.id)) as string);
+          else if (it.id && catalog.has(Number(it.id)))
+            names.push(catalog.get(Number(it.id)) as string);
           else names.push(JSON.stringify(it));
         }
       }
@@ -265,7 +284,7 @@ export class PanelAdmin implements OnDestroy {
     if (!u) return '';
     if (Array.isArray(u._roleNames) && u._roleNames.length) return u._roleNames.join(', ');
     const r = u.roles ?? u.rol ?? u.role ?? [];
-    if (Array.isArray(r)) return r.map((x:any) => (x?.nombre ?? x?.name ?? String(x))).join(', ');
+    if (Array.isArray(r)) return r.map((x: any) => x?.nombre ?? x?.name ?? String(x)).join(', ');
     return String(r);
   }
 
@@ -277,30 +296,32 @@ export class PanelAdmin implements OnDestroy {
     try {
       const t = this.auth.getToken();
       if (t) {
-        const payload = t.split('.').slice(1,2)[0];
-        const json = JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+        const payload = t.split('.').slice(1, 2)[0];
+        const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
         this.decodedToken = json;
       } else this.decodedToken = null;
-    } catch (e) { this.decodedToken = null; }
+    } catch (e) {
+      this.decodedToken = null;
+    }
 
     const uid = user.id || user.idUsuario || user.userId;
     const token = this.auth.getToken();
 
     this.assignLoading = true;
     this.rolesApi.getUserRoles(uid, token ?? undefined).subscribe({
-      next: roles => {
+      next: (roles) => {
         for (const r of roles ?? []) this.selectedRoleIds.add(r.id);
         this.assignLoading = false;
       },
       error: () => {
         // fallback: intenta parsear del listado
-        const fallback = (user.roles ?? user.rol ?? user.role) ?? [];
+        const fallback = user.roles ?? user.rol ?? user.role ?? [];
         const ids = Array.isArray(fallback)
-          ? fallback.map((r:any) => +((r?.id ?? r) as number)).filter((n:number) => !isNaN(n))
+          ? fallback.map((r: any) => +((r?.id ?? r) as number)).filter((n: number) => !isNaN(n))
           : [];
         for (const id of ids) this.selectedRoleIds.add(id);
         this.assignLoading = false;
-      }
+      },
     });
   }
 
@@ -327,9 +348,11 @@ export class PanelAdmin implements OnDestroy {
     const roleIds = Array.from(this.selectedRoleIds.values());
 
     this.assignLoading = true;
-  try { console.log('[PanelAdmin] saveRoles', { uid, roleIds, hasToken: !!token }); } catch {}
-  this.assignLoading = true;
-  this.rolesApi.setUserRoles(uid, roleIds, token ?? undefined).subscribe({
+    try {
+      console.log('[PanelAdmin] saveRoles', { uid, roleIds, hasToken: !!token });
+    } catch {}
+    this.assignLoading = true;
+    this.rolesApi.setUserRoles(uid, roleIds, token ?? undefined).subscribe({
       next: () => {
         this.assignLoading = false;
         this.cancelAssign();
@@ -344,8 +367,12 @@ export class PanelAdmin implements OnDestroy {
         } catch (e) {
           this.error = 'Error al guardar roles';
         }
-      }
+      },
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   // track opcional si lo querés en *ngFor clásico

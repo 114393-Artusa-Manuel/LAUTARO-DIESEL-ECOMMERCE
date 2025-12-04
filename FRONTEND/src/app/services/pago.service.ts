@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { environment, environment2 } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class PagoService {
   private baseUrl = `${environment.backendBaseUrl}/api/payments`;
-  private baseUrlPagos = `${environment.backendBaseUrl}/api/pagos`;
+  private baseUrlPagos = `${environment2.Url}/api/pagos`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+import { environment2 } from '../../environments/environment';
 
 export interface TopItemDto {
   id?: number | string;
@@ -16,7 +16,7 @@ export interface TopItemDto {
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
   private http = inject(HttpClient);
-  private base = `${environment.backendBaseUrl}/api/reports`;
+  private base = `${environment2.Url}/api/reports`;
 
   getTopItems(from: string, to: string, limit = 10): Observable<any> {
     let params = new HttpParams().set('from', from).set('to', to).set('limit', String(limit));

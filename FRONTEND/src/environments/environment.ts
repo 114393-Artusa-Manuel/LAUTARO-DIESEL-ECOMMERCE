@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  backendBaseUrl: ' https://synesthetic-dowily-oda.ngrok-free.dev',
+  backendBaseUrl: 'https://synesthetic-dowily-oda.ngrok-free.dev',
   mpPublicKey: 'APP_USR-0eec6606-3878-4f27-b1d3-7bbea678a54b' // reemplazá con la tuya de Mercado Pago
 };
 export const environment1 = {

@@ -27,6 +27,10 @@ export class PaymentsAdmin implements OnInit {
   sortField: 'date' | 'amount' | 'status' = 'date';
   sortDir: 'asc' | 'desc' = 'desc';
 
+  // ✅ filtro por rango de fechas (input type="date" -> YYYY-MM-DD)
+  dateFrom: string = '';
+  dateTo: string = '';
+
   // importante: pública para usar en el template
   originalPayments: any[] = [];
 
@@ -70,6 +74,18 @@ export class PaymentsAdmin implements OnInit {
         else this.payments = res?.data ?? res ?? [];
 
         this.originalPayments = (this.payments || []).slice();
+
+        // ✅ OPCIONAL: si querés que arranque mostrando SOLO "ayer", dejalo.
+        // Si NO querés esto, borrá este bloque.
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const y = yesterday.getFullYear();
+        const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+        const d = String(yesterday.getDate()).padStart(2, '0');
+        const ymd = `${y}-${m}-${d}`;
+        this.dateFrom = ymd;
+        this.dateTo = ymd;
+
         // filtros / orden por defecto
         this.applyFilter();
         this.updateChart();
@@ -136,6 +152,31 @@ export class PaymentsAdmin implements OnInit {
     }
   }
 
+  // ✅ helpers para filtro por fecha
+  private getPaymentDate(p: any): Date | null {
+    const d =
+      p?.dateCreated ??
+      p?.date_created ??
+      p?.dateApproved ??
+      p?.dateApprovedAt ??
+      p?.createdAt ??
+      null;
+
+    if (!d) return null;
+    const dt = new Date(d);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private parseDateOnly(dateStr: string, endOfDay: boolean): Date | null {
+    if (!dateStr) return null;
+    const [y, m, d] = dateStr.split('-').map(n => Number(n));
+    if (!y || !m || !d) return null;
+
+    return endOfDay
+      ? new Date(y, m - 1, d, 23, 59, 59, 999)
+      : new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+
   applyFilter() {
     const q = (this.filter || '').toString().trim().toLowerCase();
     // arrancar siempre desde originalPayments
@@ -144,6 +185,21 @@ export class PaymentsAdmin implements OnInit {
     if (this.statusFilter) {
       const sf = this.statusFilter.toString().toLowerCase();
       list = list.filter((p: any) => ((p.status || '').toString().toLowerCase() || '').includes(sf));
+    }
+
+    // ✅ filtro por rango de fechas (desde/hasta)
+    const from = this.parseDateOnly(this.dateFrom, false); // 00:00
+    const to = this.parseDateOnly(this.dateTo, true);      // 23:59:59
+
+    if (from || to) {
+      list = list.filter((p: any) => {
+        const dt = this.getPaymentDate(p);
+        if (!dt) return false;
+        const t = dt.getTime();
+        if (from && t < from.getTime()) return false;
+        if (to && t > to.getTime()) return false;
+        return true;
+      });
     }
 
     if (q) {
@@ -278,7 +334,7 @@ export class PaymentsAdmin implements OnInit {
     // If there is an items property inside a nested order object
     if (!Array.isArray(candidates) && typeof candidates === 'object') {
       // If it's an object with numeric keys or ids -> convert to array
-      const asArray = Object.keys(candidates).map(k => candidates[k]);
+      const asArray = Object.keys(candidates).map(k => (candidates as any)[k]);
       candidates = asArray;
     }
     if (!Array.isArray(candidates)) return [];
@@ -309,7 +365,7 @@ export class PaymentsAdmin implements OnInit {
     if (typeof obj === 'object') {
       for (const k of Object.keys(obj)) {
         try {
-          const val = obj[k];
+          const val = (obj as any)[k];
           const res = this.findItemsArrayRecursive(val, depth + 1);
           if (res) return res;
         } catch {
@@ -346,20 +402,21 @@ export class PaymentsAdmin implements OnInit {
     }
     if (typeof v === 'object') {
       // common BigDecimal serialization as {scale, unscaledValue} or {value}
-      if ('value' in v && (typeof v.value === 'number' || typeof v.value === 'string')) return this.parseNumber(v.value as any);
-      if ('doubleValue' in v) return this.parseNumber(v.doubleValue);
-      if ('intValue' in v) return this.parseNumber(v.intValue);
+      if ('value' in v && (typeof (v as any).value === 'number' || typeof (v as any).value === 'string')) {
+        return this.parseNumber((v as any).value);
+      }
+      if ('doubleValue' in v) return this.parseNumber((v as any).doubleValue);
+      if ('intValue' in v) return this.parseNumber((v as any).intValue);
       if ('unscaledValue' in v && 'scale' in v) {
         try {
-          // attempt to compute number from unscaledValue/scale
-          const unscaled = Number(String(v.unscaledValue));
-          const scale = Number(v.scale) || 0;
+          const unscaled = Number(String((v as any).unscaledValue));
+          const scale = Number((v as any).scale) || 0;
           if (!isNaN(unscaled)) return unscaled / Math.pow(10, scale);
         } catch {}
       }
       // try toString
-      if (typeof v.toString === 'function') {
-        const s = v.toString();
+      if (typeof (v as any).toString === 'function') {
+        const s = (v as any).toString();
         const n = Number(s.replace(/[^0-9\.-]/g, ''));
         return isNaN(n) ? NaN : n;
       }
@@ -394,7 +451,7 @@ export class PaymentsAdmin implements OnInit {
     // last resort: sum fetched items subtotal or unitPrice * qty
     try {
       const items = this.getItems(p) || [];
-      const sum = items.reduce((s, it) => s + (Number(it.price ?? 0) * Number(it.qty ?? 1)), 0);
+      const sum = items.reduce((s, it) => s + (Number((it as any).price ?? 0) * Number((it as any).qty ?? 1)), 0);
       return sum || 0;
     } catch {
       return 0;

@@ -30,4 +30,13 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Long> 
             @Param("marcaId") Long marcaId,
             @Param("nombre") String nombre
     );
+
+    @Query("""
+    SELECT p
+    FROM ProductoEntity p
+    WHERE p.activo = true
+      AND p.stock <= :threshold
+    ORDER BY p.stock ASC, p.nombre ASC
+  """)
+    List<ProductoEntity> findLowStock(@Param("threshold") Integer threshold);
 }

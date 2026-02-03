@@ -19,6 +19,7 @@ import { FailureComponent } from './checkout/failure.component';
 import { PendingComponent } from './checkout/pending.component';
 import { FaqComponent } from './pages/faq/faq.component';
 import { TerminosCondicionesComponent } from './pages/terminos-condiciones/terminos-condiciones.component';
+import { StockAdmin } from './stock-admin/stock-admin';
 
 
 export const routes: Routes = [
@@ -39,6 +40,7 @@ export const routes: Routes = [
   { path: 'admin', component: AdminDashboard, canActivate: [AuthGuard] },
   { path: 'admin/productos', component: ProductosAdmin, canActivate: [AuthGuard] },
   { path: 'admin/pagos', component: PaymentsAdmin, canActivate: [AuthGuard] },
+  { path: 'admin/stock', component: StockAdmin },
   { path: 'admin/top-items', component: TopItemsReport, canActivate: [AuthGuard] },
   { path: 'checkout', component: CheckoutComponent },
   { path: 'checkout/success', component: SuccessComponent },

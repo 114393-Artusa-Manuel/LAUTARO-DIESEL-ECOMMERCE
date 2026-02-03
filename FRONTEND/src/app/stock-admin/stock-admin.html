@@ -1,0 +1,160 @@
+<div class="container py-4">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h2 class="m-0">Dashboard de Stock</h2>
+
+    <div class="d-flex align-items-center gap-2">
+      <span *ngIf="loadingStock" class="spinner-border spinner-border-sm" role="status"></span>
+      <span *ngIf="loadingStock">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="message" class="alert alert-info py-2">
+    {{ message }}
+  </div>
+
+  <!-- Resumen -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card text-center h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">Productos en bajo stock</div>
+          <div class="fw-bold fs-4">
+            {{ totalLow }}
+            <span *ngIf="totalLow" class="badge bg-danger ms-2">ALERTA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card text-center h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">Seleccionados para encargar</div>
+          <div class="fw-bold fs-4">{{ totalSelected }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted mb-2">Parámetros</div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label mb-1">Umbral</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="threshold" (change)="load()" min="0" />
+            </div>
+            <div class="col-6">
+              <label class="form-label mb-1">Stock objetivo</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="targetStock" (change)="load()" min="1" />
+            </div>
+          </div>
+
+          <button class="btn btn-outline-secondary w-100 mt-2" (click)="load()">
+            Refrescar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista + Panel de encargo -->
+  <div class="row g-3">
+    <div class="col-12 col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Productos con stock bajo (≤ {{ threshold }})</span>
+          <span class="small text-muted">{{ totalLow }} items</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th></th>
+                <th>Producto</th>
+                <th class="d-none d-md-table-cell">Marca</th>
+                <th class="d-none d-md-table-cell">Categoría</th>
+                <th class="text-center">Stock</th>
+                <th class="text-center">Sugerido</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!lowStock?.length && !loadingStock">
+                <td colspan="6" class="text-center py-3">
+                  No hay productos en bajo stock 🎉
+                </td>
+              </tr>
+
+              <tr *ngFor="let p of lowStock">
+                <td class="text-center">
+                  <input type="checkbox" [checked]="isSelected(p)" (change)="toggleSelect(p)" />
+                </td>
+                <td>
+                  <div class="fw-semibold">{{ p.nombre }}</div>
+                  <div class="small text-muted">ID: {{ p.productoId }}</div>
+                </td>
+                <td class="d-none d-md-table-cell">{{ p.marca || '-' }}</td>
+                <td class="d-none d-md-table-cell">{{ p.categoria || '-' }}</td>
+                <td class="text-center">
+                  <span class="badge bg-danger">{{ p.stockActual ?? 0 }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-primary">{{ p.sugeridoReponer ?? 0 }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Panel de encargo -->
+    <div class="col-12 col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          Encargar reposición
+        </div>
+        <div class="card-body">
+
+          <div *ngIf="!selected.length" class="text-muted">
+            Seleccioná productos desde la tabla para preparar el pedido.
+          </div>
+
+          <div *ngIf="selected.length">
+            <div class="small text-muted mb-2">Ítems</div>
+
+            <div class="replenish-item" *ngFor="let it of selected">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-semibold">{{ it.nombre }}</div>
+                  <div class="small text-muted">Stock actual: {{ it.stockActual ?? 0 }}</div>
+                </div>
+
+                <button class="btn btn-sm btn-outline-danger"
+                        (click)="toggleSelect({ productoId: it.productoId })">
+                  Quitar
+                </button>
+              </div>
+
+              <div class="mt-2">
+                <label class="form-label mb-1 small">Cantidad a encargar</label>
+                <input type="number" class="form-control"
+                       [value]="it.cantidad"
+                       (input)="setQty(it.productoId, $any($event.target).value)"
+                       min="1" />
+              </div>
+
+              <hr class="my-3" />
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -113,13 +113,14 @@ export class AuthService {
     return this._usuario();
   }
 
-  //  Recuperación de contraseña
-  requestPasswordRecovery(correo: string): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/auth/recover`, { correo });
-  }
+  // Recuperación de contraseña
+requestPasswordRecovery(correo: string): Observable<any> {
+  return this.http.post<any>(`${this.baseUrl}/api/auth/recover`, { correo });
+}
 
-  //  Restablecer contraseña
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/auth/reset-password`, { token, newPassword });
-  }
+// Restablecer contraseña
+resetPassword(token: string, newPassword: string): Observable<any> {
+  return this.http.post<any>(`${this.baseUrl}/api/auth/reset-password`, { token, newPassword });
+}
+
 }

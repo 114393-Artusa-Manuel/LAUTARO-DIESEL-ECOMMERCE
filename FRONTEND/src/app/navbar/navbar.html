@@ -16,11 +16,7 @@
       <li class="nav-item">
         <a class="nav-link" routerLink="/productos" routerLinkActive="active">Productos</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/carrito" routerLinkActive="active"
-          >Carrito <span class="badge bg-primary ms-1">{{ (totalCount$ | async) || 0 }}</span></a
-        >
-      </li>
+
       <li class="nav-item">
         <a class="nav-link" routerLink="/terminos" routerLinkActive="active">Términos y Condiciones</a>
       </li>
@@ -29,8 +25,17 @@
       </li>
     </ul>
 
-    <!-- Right side: authentication controls -->
-    <ul class="navbar-nav ms-auto">
+    <!-- Right side: cart + authentication controls -->
+    <ul class="navbar-nav ms-auto align-items-lg-center">
+      <!-- Carrito a la derecha con icono -->
+      <li class="nav-item ms-lg-auto me-lg-2">
+  <a class="nav-link d-flex align-items-center gap-2" routerLink="/carrito">
+    🛒 Carrito
+    <span class="badge bg-primary">{{ (totalCount$ | async) || 0 }}</span>
+  </a>
+</li>
+
+
       <li class="nav-item" *ngIf="!isAuthenticated()">
         <a class="nav-link" routerLink="/register" routerLinkActive="active">Registrarse</a>
       </li>
@@ -50,8 +55,7 @@
           href="#"
           role="button"
           (click)="openLogoutConfirm(); $event.preventDefault()"
-          >Cerrar sesión</a
-        >
+        >Cerrar sesión</a>
       </li>
     </ul>
   </div>

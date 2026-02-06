@@ -262,18 +262,7 @@
             <div class="text-break">{{ selected.orderId }}</div>
           </div>
 
-          <div class="mb-2">
-            <div class="text-muted">Preference ID</div>
-            <div class="text-break">{{ selected.preferenceId }}</div>
-          </div>
-
-          <div class="mt-3" *ngIf="selected.rawNotificationJson">
-            <div class="text-muted mb-1">Notificación cruda</div>
-            <pre class="bg-light p-2 small mb-0">
-{{ selected.rawNotificationJson | json }}
-            </pre>
-          </div>
-        </div>
+         
       </div>
     </div>
   </div>

@@ -147,6 +147,11 @@
           <span>Total:</span>
           <strong>${{ cart.total$ | async | number: '1.2-2' }} ARS</strong>
         </div>
+        
+        <div *ngIf="stockErrorMsg" class="alert alert-danger mt-3 mb-3" role="alert">
+          <strong>⚠️ No se pudo confirmar la compra</strong><br />
+          {{ stockErrorMsg }}
+        </div>
 
         <!-- ✅ Confirmar compra -->
         <button

@@ -16,6 +16,7 @@ export class Carrito implements OnInit {
 
   items$ = this.cart.items$;
   total$ = this.cart.total$;
+  stockErrorMsg: string | null = null;
 
   private readonly userId = 4;
 
@@ -104,23 +105,32 @@ export class Carrito implements OnInit {
   // 🚫 Bloquea el botón permanentemente después de confirmar
   compraConfirmada: boolean = false;
 
-      zone = inject(NgZone);
+  zone = inject(NgZone);
 
   async confirmarCompra() {
     if (this.isProcessing) return;
 
-    this.isProcessing = true;
+    this.zone.run(() => {
+      this.isProcessing = true;
+      this.stockErrorMsg = null;
+    });
 
     try {
       await this.cart.confirmarCompra();
 
       this.zone.run(() => {
         this.compraConfirmada = true;
+        this.stockErrorMsg = null;
       });
-    } catch (err) {
-      console.error('Error confirmando compra:', err);
+    } catch (err: any) {
+      this.zone.run(() => {
+        this.compraConfirmada = false;
+        this.stockErrorMsg = err?.message || 'No hay stock suficiente para completar la compra.';
+      });
     } finally {
-      this.isProcessing = false;
+      this.zone.run(() => {
+        this.isProcessing = false;
+      });
     }
   }
 

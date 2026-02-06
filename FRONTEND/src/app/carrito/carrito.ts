@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../services/cart.service';
 import { PagoService } from '../services/pago.service';
@@ -104,18 +104,23 @@ export class Carrito implements OnInit {
   // 🚫 Bloquea el botón permanentemente después de confirmar
   compraConfirmada: boolean = false;
 
+      zone = inject(NgZone);
+
   async confirmarCompra() {
     if (this.isProcessing) return;
 
     this.isProcessing = true;
 
     try {
-      await this.cart.confirmarCompra(); // descuenta stock con tu backend 👍
-      this.compraConfirmada = true; // 🔒 bloqueo permanente
+      await this.cart.confirmarCompra();
+
+      this.zone.run(() => {
+        this.compraConfirmada = true;
+      });
     } catch (err) {
       console.error('Error confirmando compra:', err);
     } finally {
-      this.isProcessing = false; // vuelve a texto normal del botón
+      this.isProcessing = false;
     }
   }
 

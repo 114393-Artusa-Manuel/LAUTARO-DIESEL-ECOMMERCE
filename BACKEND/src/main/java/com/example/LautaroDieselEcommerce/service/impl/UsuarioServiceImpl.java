@@ -36,31 +36,24 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public BaseResponse<UsuarioDto> crearUsuario(UsuarioCreateDto dto) {
 
+        // 1) Validación: correo único
         if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             return new BaseResponse<>("El correo ya está registrado", 400, null);
         }
 
-        // Lista donde se cargarán los roles
+        // 2) Buscar (o crear) rol "cliente"
+        RolEntity rolCliente = rolRepository.findByNombreIgnoreCase("cliente")
+                .orElseGet(() -> rolRepository.save(
+                        RolEntity.builder()
+                                .nombre("cliente")
+                                .build()
+                ));
+
+        // 3) Armar lista de roles (mutable y compatible)
         List<RolEntity> roles = new ArrayList<>();
+        roles.add(rolCliente);
 
-        // Si el cliente envía roles, los respetamos
-        if (dto.getRolesIds() != null && !dto.getRolesIds().isEmpty()) {
-            roles = rolRepository.findAllById(dto.getRolesIds());
-
-            if (roles.isEmpty()) {
-                return new BaseResponse<>("Los roles enviados no existen", 400, null);
-            }
-        }
-        else {
-            // Si NO envía roles → asignamos 'particular'
-            RolEntity rolParticular = rolRepository.findByNombreIgnoreCase("particular")
-                    .orElseGet(() -> rolRepository.save(
-                            RolEntity.builder().nombre("particular").build()
-                    ));
-
-            roles.add(rolParticular);
-        }
-
+        // 4) Crear usuario forzando rol "cliente"
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .correo(dto.getCorreo())
                 .claveHash(passwordEncoder.encode(dto.getClave()))
@@ -72,10 +65,13 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .roles(roles)
                 .build();
 
+        // 5) Guardar
         usuarioRepository.save(usuario);
 
+        // 6) Respuesta
         return new BaseResponse<>("Usuario creado con éxito", 201, mapToDTO(usuario));
     }
+
 
 
     @Override

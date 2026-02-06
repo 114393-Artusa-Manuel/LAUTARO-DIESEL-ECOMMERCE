@@ -57,7 +57,7 @@
             <div class="text-muted small">
               {{
                 it.product?.descripcion
-                  ? (it.product.descripcion | slice : 0 : 80) +
+                  ? (it.product.descripcion | slice: 0 : 80) +
                     (it.product.descripcion.length > 80 ? '...' : '')
                   : ''
               }}
@@ -74,14 +74,14 @@
                   "
                   class="text-decoration-line-through text-muted me-1"
                 >
-                  ${{ it.product?.precio ?? 0 | number : '1.2-2' }}
+                  ${{ it.product?.precio ?? 0 | number: '1.2-2' }}
                 </strong>
                 <!-- Precio con descuento final -->
                 <strong class="text-success">
                   ${{
                     it.finalPrice ??
                       (it.product?.precio ?? 0) * (1 - (it.product?.descuento ?? 0) / 100)
-                      | number : '1.2-2'
+                      | number: '1.2-2'
                   }}
                   {{ it.product?.moneda || '' }}
                 </strong>
@@ -119,8 +119,7 @@
               <div class="small text-muted">Subtotal</div>
               <div class="fw-bold">
                 ${{
-                  (it.finalPrice ?? (it.product?.precio ?? 0)) * (it.quantity || 1)
-                    | number : '1.2-2'
+                  (it.finalPrice ?? it.product?.precio ?? 0) * (it.quantity || 1) | number: '1.2-2'
                 }}
                 {{ it.product?.moneda || '' }}
               </div>
@@ -137,16 +136,16 @@
         <h5 class="mb-3">Resumen de compra</h5>
         <div class="d-flex justify-content-between">
           <span>Subtotal:</span>
-          <strong>${{ cart.subtotal$ | async | number : '1.2-2' }} ARS</strong>
+          <strong>${{ cart.subtotal$ | async | number: '1.2-2' }} ARS</strong>
         </div>
         <div class="d-flex justify-content-between text-danger">
           <span>Descuento:</span>
-          <strong>-${{ cart.discount$ | async | number : '1.2-2' }} ARS</strong>
+          <strong>-${{ cart.discount$ | async | number: '1.2-2' }} ARS</strong>
         </div>
         <hr />
         <div class="d-flex justify-content-between fs-5 mb-3">
           <span>Total:</span>
-          <strong>${{ cart.total$ | async | number : '1.2-2' }} ARS</strong>
+          <strong>${{ cart.total$ | async | number: '1.2-2' }} ARS</strong>
         </div>
 
         <!-- ✅ Confirmar compra -->
@@ -163,7 +162,9 @@
       <!-- 🔸 Acciones -->
       <div class="d-flex justify-content-between align-items-center mt-4">
         <button class="btn btn-outline-danger" (click)="clear()">Vaciar carrito</button>
-        <button class="btn btn-primary" (click)="irAPagar(items)">Ir a pagar</button>
+        <button class="btn btn-success" (click)="irAPagar(items)" [disabled]="!compraConfirmada">
+          💳 Ir a pagar
+        </button>
       </div>
     </ng-container>
   </ng-container>
